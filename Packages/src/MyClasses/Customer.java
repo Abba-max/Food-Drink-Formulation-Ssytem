@@ -5,7 +5,7 @@ import java.util.LinkedList;
 public class Customer extends Person implements Formulation {
     public int customerID;
     private int age;
-    public LinkedList<String> allergies;
+    private ConsumerSpecificInfo info;
 
     public Customer(){}
 
