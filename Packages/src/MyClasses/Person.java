@@ -7,6 +7,18 @@ public class Person {
     private String contact;
     private String dateofbirth;
 
+    public Person(String name, String address, String contact, String dob) {
+        this.name = name;
+        this.address = address;
+        this.contact = contact;
+        this.dateofbirth = dob;
+
+    }
+
+    public Person() {
+
+    }
+
     public int getPersonID() {
         return personID;
     }
