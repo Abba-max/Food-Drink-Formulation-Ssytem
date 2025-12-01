@@ -1,8 +1,8 @@
-package MyClasses;
+package MyClasses.Conditions;
 
 import java.util.LinkedList;
 
-public class Prepprotocol implements  Conditions{
+public class Prepprotocol implements Conditions {
     public LinkedList<String> steps;
     public LinkedList<Optcondition> stepConditions;
 

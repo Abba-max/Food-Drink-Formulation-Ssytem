@@ -1,5 +1,7 @@
 package MyClasses;
 
+import Persons.Person;
+
 import java.util.Date;
 
 public class Veto {

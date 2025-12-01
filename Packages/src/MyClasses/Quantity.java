@@ -3,7 +3,7 @@ package MyClasses;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Quantity extends Ingredient {
+public class Quantity {
     public double weight;
     public double volume;
     public double fraction;

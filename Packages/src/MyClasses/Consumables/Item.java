@@ -1,4 +1,6 @@
-package MyClasses;
+package MyClasses.Consumables;
+
+import Persons.Author;
 
 public class Item {
     public String name;

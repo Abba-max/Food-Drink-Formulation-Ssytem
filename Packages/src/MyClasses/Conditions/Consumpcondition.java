@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Conditions;
 
 public class Consumpcondition implements Conditions {
     public double temperature;

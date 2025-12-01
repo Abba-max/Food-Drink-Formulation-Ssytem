@@ -1,4 +1,8 @@
-package MyClasses;
+package MyClasses.Consumables;
+
+import MyClasses.*;
+import Persons.Author;
+import Persons.ConsumerSpecificInfo;
 
 import java.util.LinkedList;
 import java.util.stream.Collectors;

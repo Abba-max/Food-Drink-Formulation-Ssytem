@@ -1,4 +1,11 @@
-package MyClasses;
+package Persons;
+
+import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Food;
+import MyClasses.Consumables.Item;
+import MyClasses.Feedback;
+import MyClasses.Formulation;
+import MyClasses.Ingredient;
 
 import java.util.LinkedList;
 
@@ -24,20 +31,20 @@ public class Customer extends Person implements Formulation {
         this.feedbackHistory = new LinkedList<>();
     }
 
-    /**
-     * Customer creates their own formulation suggestion
-     */
-    @Override
-    public void Formulate() {
-        System.out.println("Customer " + getName() + " is creating a formulation suggestion");
-        // Implementation would involve creating a new Food/Drink object
-        // with customer's preferences and sending to admin for review
-    }
-
-    /**
-     * Customer consults available formulations
-     * Can search by ingredients to check for allergies
-     */
+//    /**
+//     * Customer creates their own formulation suggestion
+//     */
+//    @Override
+//    public void Formulate() {
+//        System.out.println("Customer " + getName() + " is creating a formulation suggestion");
+//        // Implementation would involve creating a new Food/Drink object
+//        // with customer's preferences and sending to admin for review
+//    }
+//
+//    /**
+//     * Customer consults available formulations
+//     * Can search by ingredients to check for allergies
+//     */
     @Override
     public void consultFormulation() {
         System.out.println("Customer " + getName() + " is consulting formulations");
@@ -47,18 +54,23 @@ public class Customer extends Person implements Formulation {
         }
     }
 
-    /**
-     * Customer checks formulation for potential issues based on their profile
-     * Includes allergy checking and side effects
-     */
     @Override
     public void checkFormulationissues() {
-        System.out.println("Customer " + getName() + " is checking formulation issues");
 
-        if (info != null && info.allergies != null && !info.allergies.isEmpty()) {
-            System.out.println("Warning: Customer has " + info.allergies.size() + " known allergies");
-        }
     }
+
+//    /**
+//     * Customer checks formulation for potential issues based on their profile
+//     * Includes allergy checking and side effects
+//     */
+//    @Override
+//    public void checkFormulationissues() {
+//        System.out.println("Customer " + getName() + " is checking formulation issues");
+//
+//        if (info != null && info.allergies != null && !info.allergies.isEmpty()) {
+//            System.out.println("Warning: Customer has " + info.allergies.size() + " known allergies");
+//        }
+//    }
 
     /**
      * Checks if a formulation contains allergens for this customer
@@ -107,6 +119,9 @@ public class Customer extends Person implements Formulation {
 
         System.out.println("Feedback submitted for: " + item.name);
         return feedback;
+    }
+    public void Formulate(){
+        return;
     }
 
     /**

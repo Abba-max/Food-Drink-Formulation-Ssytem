@@ -1,4 +1,4 @@
-package MyClasses;
+package Persons;
 
 public class Author extends Person {
     public int authorID;

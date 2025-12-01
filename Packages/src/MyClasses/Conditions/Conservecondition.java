@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Conditions;
 
 public class Conservecondition implements Conditions {
     public double temp;

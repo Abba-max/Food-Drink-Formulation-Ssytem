@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Conditions;
 
 public class Optcondition implements Conditions {
     public double temp;

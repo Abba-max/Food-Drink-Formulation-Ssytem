@@ -1,4 +1,4 @@
-package MyClasses;
+package Persons;
 
 public class Person {
     public int personID;

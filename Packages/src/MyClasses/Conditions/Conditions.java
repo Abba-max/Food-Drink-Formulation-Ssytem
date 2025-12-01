@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Conditions;
 
 public interface Conditions {
     public void Create();
