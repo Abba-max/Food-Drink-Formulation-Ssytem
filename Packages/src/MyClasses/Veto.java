@@ -1,6 +1,6 @@
 package MyClasses;
 
-import Persons.Person;
+import MyClasses.Persons.Person;
 
 import java.util.Date;
 

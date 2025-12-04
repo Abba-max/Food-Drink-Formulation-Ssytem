@@ -1,4 +1,4 @@
-package Persons;
+package MyClasses.Persons;
 
 import java.util.LinkedList;
 

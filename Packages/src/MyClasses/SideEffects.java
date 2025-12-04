@@ -1,6 +1,6 @@
 package MyClasses;
 
-import Persons.ConsumerSpecificInfo;
+import MyClasses.Persons.ConsumerSpecificInfo;
 
 import java.util.LinkedList;
 

@@ -1,13 +1,15 @@
 package MyClasses.Consumables;
 
-import Persons.Author;
+import MyClasses.Persons.Author;
+
+import java.util.Date;
 
 public class Item {
     public String name;
     public int itemID;
     public double price;
-    public String entry_date;
-    public String expiry_date;
+    public Date entry_date;
+//    public String expiry_date;
     public Author author;
 
     public Item(){

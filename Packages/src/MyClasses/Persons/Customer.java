@@ -1,4 +1,4 @@
-package Persons;
+package MyClasses.Persons;
 
 import MyClasses.Consumables.Drink;
 import MyClasses.Consumables.Food;

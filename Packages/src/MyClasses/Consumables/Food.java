@@ -1,8 +1,13 @@
 package MyClasses.Consumables;
 
+
 import MyClasses.*;
-import Persons.Author;
-import Persons.ConsumerSpecificInfo;
+import MyClasses.Conditions.Conservecondition;
+import MyClasses.Conditions.Consumpcondition;
+import MyClasses.Conditions.Optcondition;
+import MyClasses.Conditions.Prepprotocol;
+import MyClasses.Persons.Author;
+import MyClasses.Persons.ConsumerSpecificInfo;
 
 import java.util.LinkedList;
 import java.util.stream.Collectors;
