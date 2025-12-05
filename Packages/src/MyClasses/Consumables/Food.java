@@ -97,6 +97,7 @@ public class Food extends Item {
     }
 
 
+
     public void addStandard(String standard) {
         if (standard != null && !standard.trim().isEmpty()) {
             if (standards == null) {
@@ -148,7 +149,7 @@ public class Food extends Item {
         if (feedbacks == null) return new LinkedList<>();
 
         return feedbacks.stream()
-                .filter(f -> f.like)
+                .filter(f -> f.isLike())
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -157,7 +158,7 @@ public class Food extends Item {
         if (feedbacks == null) return new LinkedList<>();
 
         return feedbacks.stream()
-                .filter(f -> !f.like)
+                .filter(f -> !f.isLike())
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -271,5 +272,8 @@ public class Food extends Item {
                 ", averagePricePerKg=" + averagePricePerKg +
                 ", vetoed=" + isVetoed() +
                 '}';
+    }
+
+    public void setExpiryDate(String string) {
     }
 }

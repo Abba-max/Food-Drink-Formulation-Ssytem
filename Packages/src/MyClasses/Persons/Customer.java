@@ -17,13 +17,13 @@ public class Customer extends Person {
     private LinkedList<Feedback> feedbackHistory;
 
     public Customer() {
-        super(role);
+        super();
         this.favoriteFormulations = new LinkedList<>();
         this.feedbackHistory = new LinkedList<>();
     }
 
     public Customer(int customerID, int age) {
-        super(role);
+        super();
         this.customerID = customerID;
         this.age = age;
         this.favoriteFormulations = new LinkedList<>();
@@ -33,15 +33,15 @@ public class Customer extends Person {
     public void consultFormulation() {
         System.out.println("Customer " + getName() + " is consulting formulations");
 
-        if (info != null && info.allergies != null) {
-            System.out.println("Checking for allergens: " + info.allergies);
+        if (info != null && info.getAllergies() != null) {
+            System.out.println("Checking for allergens: " + info.getAllergies());
         }
     }
 
 
 
     public boolean hasAllergenIn(Item item) {
-        if (info == null || info.allergies == null || info.allergies.isEmpty()) {
+        if (info == null || info.getAllergies() == null || info.getAllergies().isEmpty()) {
             return false;
         }
 
@@ -58,7 +58,7 @@ public class Customer extends Person {
         }
 
         for (Ingredient ing : ingredients) {
-            for (String allergen : info.allergies) {
+            for (String allergen : info.getAllergies()) {
                 if (ing.name != null &&
                         ing.name.toLowerCase().contains(allergen.toLowerCase())) {
                     return true;

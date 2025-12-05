@@ -25,6 +25,9 @@ public class Person {
 
     }
 
+    public Person(String name, String address, String contact, String dob) {
+    }
+
     public String getRoleName() {
         return this.role.getDisplayName();
     }
