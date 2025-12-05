@@ -4,13 +4,12 @@ import MyClasses.Consumables.Drink;
 import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Item;
 import MyClasses.Feedback;
-import MyClasses.Formulation;
 import MyClasses.Ingredient;
 
 import java.util.LinkedList;
 
 
-public class Customer extends Person implements Formulation {
+public class Customer extends Person {
     private int customerID;
     private int age;
     private ConsumerSpecificInfo info;
@@ -18,34 +17,19 @@ public class Customer extends Person implements Formulation {
     private LinkedList<Feedback> feedbackHistory;
 
     public Customer() {
-        super();
+        super(role);
         this.favoriteFormulations = new LinkedList<>();
         this.feedbackHistory = new LinkedList<>();
     }
 
-    public Customer(int customerID, String name, String address, String contact, String dob, int age) {
-        super(name, address, contact, dob);
+    public Customer(int customerID, int age) {
+        super(role);
         this.customerID = customerID;
         this.age = age;
         this.favoriteFormulations = new LinkedList<>();
         this.feedbackHistory = new LinkedList<>();
     }
 
-//    /**
-//     * Customer creates their own formulation suggestion
-//     */
-//    @Override
-//    public void Formulate() {
-//        System.out.println("Customer " + getName() + " is creating a formulation suggestion");
-//        // Implementation would involve creating a new Food/Drink object
-//        // with customer's preferences and sending to admin for review
-//    }
-//
-//    /**
-//     * Customer consults available formulations
-//     * Can search by ingredients to check for allergies
-//     */
-    @Override
     public void consultFormulation() {
         System.out.println("Customer " + getName() + " is consulting formulations");
 
@@ -54,27 +38,8 @@ public class Customer extends Person implements Formulation {
         }
     }
 
-    @Override
-    public void checkFormulationissues() {
 
-    }
 
-//    /**
-//     * Customer checks formulation for potential issues based on their profile
-//     * Includes allergy checking and side effects
-//     */
-//    @Override
-//    public void checkFormulationissues() {
-//        System.out.println("Customer " + getName() + " is checking formulation issues");
-//
-//        if (info != null && info.allergies != null && !info.allergies.isEmpty()) {
-//            System.out.println("Warning: Customer has " + info.allergies.size() + " known allergies");
-//        }
-//    }
-
-    /**
-     * Checks if a formulation contains allergens for this customer
-     */
     public boolean hasAllergenIn(Item item) {
         if (info == null || info.allergies == null || info.allergies.isEmpty()) {
             return false;

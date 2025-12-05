@@ -1,5 +1,7 @@
 package MyClasses.Persons;
 
+import MyClasses.Role;
+
 public class Person {
     public int personID;
     public String name;
@@ -7,25 +9,29 @@ public class Person {
     private String contact;
     private String dateofbirth;
     private String password;
-    private String role;
+    private Role role;
 
-    public Person(String name, String address, String contact, String dob, String password, String role) {
+
+    public Person(String name, String address, String contact, String dob, String password, Role role) {
         this.name = name;
         this.address = address;
         this.contact = contact;
         this.dateofbirth = dob;
         this.password = password;
-
         this.role = role;
     }
 
-    public String getRole() {
-        return role;
+    public Person() {
+
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public String getRoleName() {
+        return this.role.getDisplayName();
     }
+
+  public int getRoleAccessLevel(){
+        return this.role.getAccessLevel();
+  }
 
     public int getPersonID() {
         return personID;

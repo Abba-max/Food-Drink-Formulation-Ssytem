@@ -14,4 +14,21 @@ public class Ingredient {
     public Ingredient() {
 
     }
+
+    public Quantity getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Quantity quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getIngredientID() {
+        return ingredientID;
+    }
+
 }
