@@ -87,9 +87,10 @@ public class Admin extends Person implements Formulation {
         String password = pad.getString();
 
         Author author = new Author(authorID, name, address, contact, dob);
+        author.setName(name);
         author.setPassword(password);
 
-        authors.add(author);
+//        authors.add(author);
 
         screen.display("\n✓ Author account created successfully!");
         screen.display("Author ID: " + authorID);

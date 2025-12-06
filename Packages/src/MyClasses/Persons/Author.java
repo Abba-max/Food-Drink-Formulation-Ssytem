@@ -31,7 +31,7 @@ public class Author extends Person implements Formulation {
     }
 
     public Author(int authorID, String name, String address, String contact, String dob) {
-        super(name, address, contact, dob);
+        super();
         this.authorID = authorID;
         this.formulatedItems = new LinkedList<>();
     }
@@ -1149,6 +1149,5 @@ public class Author extends Person implements Formulation {
 
         return protocol;
     }
-
 
 }
