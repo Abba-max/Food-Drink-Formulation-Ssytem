@@ -3,8 +3,8 @@ package MyClasses.Persons;
 import MyClasses.Role;
 
 public class Person {
-    public int personID;
-    public String name;
+    private int personID;
+    private String name;
     private String address;
     private String contact;
     private String dateofbirth;
@@ -45,7 +45,6 @@ public class Person {
     }
 
     public String getName() {
-
         return this.name;
     }
 

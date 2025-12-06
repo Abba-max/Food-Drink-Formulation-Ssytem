@@ -215,6 +215,11 @@ public class NotificationSystem {
 
         // Getters
         public int getNotificationId() { return notificationId; }
+
+        public String getIssueDescription() {
+            return issueDescription;
+        }
+
         public int getItemID() { return itemID; }
         public String getStatus() { return status; }
         public String getSeverity() { return severity; }

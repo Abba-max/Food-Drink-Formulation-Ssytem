@@ -125,7 +125,7 @@ public class Author extends Person implements Formulation {
 
         // Modify the item
         screen.display("\n=== FIX ISSUE FOR: " + item.getName() + " ===");
-        screen.display("Reported Issue: " + targetNotif.issueDescription);
+        screen.display("Reported Issue: " + targetNotif.getIssueDescription());
         screen.display("\nWhat would you like to modify?");
         screen.display("1. Add/Remove/Modify Ingredients");
         screen.display("2. Update Price");
@@ -516,6 +516,7 @@ public class Author extends Person implements Formulation {
         return authorID;
     }
 
+
     public LinkedList<Item> getFormulatedItems() {
         return formulatedItems;
     }
@@ -525,18 +526,30 @@ public class Author extends Person implements Formulation {
     // For brevity, I'm showing the structure:
 
     @Override
-    public Item Formulate() {
-        // Original implementation
-        return null;
-    }
 
-    @Override
-    public void consultFormulation() {
-        // Original implementation
-    }
 
-    @Override
-    public void checkFormulationissues() {
-        // Original implementation
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

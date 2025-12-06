@@ -9,10 +9,7 @@ import MyClasses.Persons.Customer;
 
 import java.util.LinkedList;
 
-/**
- * Main Menu System
- * Entry point for the Food & Drink Formulation Management System
- */
+
 public class Main {
 
     private LinkedList<Admin> admins;
@@ -520,7 +517,7 @@ public class Main {
     // ============ MAIN METHOD ============
 
     public static void main(String[] args) {
-        MainMenuSystem system = new MainMenuSystem();
+        Main system = new Main();
         system.start();
     }
 }
