@@ -37,7 +37,7 @@ public class Person {
   }
 
     public int getPersonID() {
-        return personID;
+        return this.personID;
     }
 
     public void setPersonID(int personID) {
@@ -45,7 +45,8 @@ public class Person {
     }
 
     public String getName() {
-        return name;
+
+        return this.name;
     }
 
     public void setName(String name) {
@@ -53,7 +54,7 @@ public class Person {
     }
 
     public String getAddress() {
-        return address;
+        return this.address;
     }
 
     public void setAddress(String address) {
@@ -61,7 +62,7 @@ public class Person {
     }
 
     public String getContact() {
-        return contact;
+        return this.contact;
     }
 
     public void setContact(String contact) {
@@ -69,7 +70,7 @@ public class Person {
     }
 
     public String getDateofbirth() {
-        return dateofbirth;
+        return this.dateofbirth;
     }
 
     public void setDateofbirth(String dateofbirth) {
