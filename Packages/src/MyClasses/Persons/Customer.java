@@ -21,6 +21,7 @@ import java.util.LinkedList;
 public class Customer extends Person implements Formulation {
     private int customerID;
     private int age;
+    private boolean payed;
     private ConsumerSpecificInfo info;
     private LinkedList<Item> favoriteFormulations;
     private LinkedList<Feedback> feedbackHistory;
@@ -726,8 +727,11 @@ public class Customer extends Person implements Formulation {
         }
     }
 
-    // ============ SYSTEM METHODS ============
+    // ============ SYSTEM METHODS ==========
 
+    public void hasPayed(boolean payed){
+        this.payed = payed;
+    }
     /**
      * Sets available formulations (called by system/manager)
      */
