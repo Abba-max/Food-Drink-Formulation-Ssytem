@@ -643,8 +643,8 @@ public class Author extends Person implements Formulation {
         screen.display("Enter price:");
         drink.setPrice(pad.getDouble());
 
-        screen.display("Enter entry date (YYYY-MM-DD):");
-        drink.setEntryDate(pad.getString());
+//        screen.display("Enter entry date (YYYY-MM-DD):");
+//        drink.setEntryDate(pad.getString());
 
         screen.display("Enter expiry date (YYYY-MM-DD):");
         drink.setExpiryDate(pad.getString());
@@ -731,29 +731,6 @@ public class Author extends Person implements Formulation {
         }
     }
 
-    /**
-     * Creates optimal/lab conditions
-     */
-    private Optcondition createOptCondition() {
-        Optcondition cond = new Optcondition();
-
-        screen.display("Enter temperature (°C):");
-        cond.setTemp(pad.getDouble());
-
-        screen.display("Enter pressure (kPa):");
-        cond.setPressure(pad.getDouble());
-
-        screen.display("Enter moisture (%):");
-        cond.setMoisture(pad.getDouble());
-
-        screen.display("Enter vibration level:");
-        cond.setVibration(pad.getDouble());
-
-        screen.display("Enter time period (minutes):");
-        cond.setPeriod(pad.getInt());
-
-        return cond;
-    }
 
     /**
      * Creates conservation conditions
@@ -791,34 +768,7 @@ public class Author extends Person implements Formulation {
     /**
      * Creates preparation protocol with steps
      */
-    private Prepprotocol createPrepProtocol() {
-        Prepprotocol protocol = new Prepprotocol();
 
-        screen.display("How many preparation steps?");
-        int numSteps = pad.getInt();
-
-        for (int i = 0; i < numSteps; i++) {
-            screen.display("\nStep " + (i + 1) + ":");
-            screen.display("Enter step description:");
-            String stepDesc = pad.getString();
-
-            screen.display("Does this step have specific conditions? (1=Yes, 0=No)");
-            int hasConditions = pad.getInt();
-
-            Optcondition stepCond = null;
-            if (hasConditions == 1) {
-                screen.display("Enter conditions for this step:");
-                stepCond = createOptCondition();
-            } else {
-                stepCond = new Optcondition();
-            }
-
-            protocol.addStep(stepDesc, stepCond);
-            screen.display("✓ Step added");
-        }
-
-        return protocol;
-    }
 
     /**
      * Adds standards to the formulation
@@ -970,6 +920,27 @@ public class Author extends Person implements Formulation {
         }
     }
 
+    /**
+     * Gets count of food formulations
+     */
+    public int getFoodCount() {
+        int count = 0;
+        for (Item item : formulatedItems) {
+            if (item instanceof Food) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Gets count of drink formulations
+     */
+    public int getDrinkCount() {
+        int count = 0;
+        for (Item item : formulatedItems) {
+            if (item instanceof Drink) count++;
+        }
+        return count;
+    }
     /**
      * Views detailed information about a specific formulation
      */
@@ -1147,5 +1118,37 @@ public class Author extends Person implements Formulation {
             screen.display("Recommendation: Review and address the warnings above.");
         }
     }
+    /**
+     * Creates preparation protocol with steps
+     */
+    private Prepprotocol createPrepProtocol() {
+        Prepprotocol protocol = new Prepprotocol();
+
+        screen.display("How many preparation steps?");
+        int numSteps = pad.getInt();
+
+        for (int i = 0; i < numSteps; i++) {
+            screen.display("\nStep " + (i + 1) + ":");
+            screen.display("Enter step description:");
+            String stepDesc = pad.getString();
+
+            screen.display("Does this step have specific conditions? (1=Yes, 0=No)");
+            int hasConditions = pad.getInt();
+
+            Optcondition stepCond = null;
+            if (hasConditions == 1) {
+                screen.display("Enter conditions for this step:");
+                stepCond = createOptCondition();
+            } else {
+                stepCond = new Optcondition();
+            }
+
+            protocol.addStep(stepDesc, stepCond);
+            screen.display("✓ Step added");
+        }
+
+        return protocol;
+    }
+
 
 }
