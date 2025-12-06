@@ -45,13 +45,6 @@ public class Person {
     }
 
     public String getName() {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> 9897472ca87149afea826c88f3d94fd21d74ce33
->>>>>>> 0999755a29d9a35c0c46ef7750adb60d49b6c7e5
         return this.name;
     }
 

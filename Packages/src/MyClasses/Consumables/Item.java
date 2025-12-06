@@ -1,5 +1,6 @@
 package MyClasses.Consumables;
 
+import MyClasses.Conditions.Prepprotocol;
 import MyClasses.Persons.Author;
 
 import java.util.Date;
@@ -46,4 +47,7 @@ public class Item {
         return this.itemID;
     }
 
+
+    public void setExpiryDate(String string) {
+    }
 }
