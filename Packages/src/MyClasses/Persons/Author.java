@@ -20,7 +20,7 @@ import java.util.LinkedList;
  */
 public class Author extends Person implements Formulation {
     private int authorID;
-    private LinkedList<Item> formulatedItems;
+    private LinkedList<Item> formulatedItems = new LinkedList<>();
 
     private Keypad pad = new Keypad();
     private Screen screen = new Screen();
@@ -37,7 +37,7 @@ public class Author extends Person implements Formulation {
     }
 
     public Author(int authorID, String name, String address, String contact, String dob) {
-        super(name, address, contact, dob);
+        super();
         this.authorID = authorID;
     }
     // ============ FORMULATION METHODS ============
@@ -671,6 +671,7 @@ public class Author extends Person implements Formulation {
     public int getAuthorID() {
         return this.authorID;
     }
+
 
     public void setAuthorID(int authorID) {
         this.authorID = authorID;
