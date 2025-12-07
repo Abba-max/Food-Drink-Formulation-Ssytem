@@ -8,6 +8,7 @@ import MyClasses.Formulation;
 import MyClasses.Ingredients.Ingredient;
 import MyClasses.Keyboard.Keypad;
 import MyClasses.Keyboard.Screen;
+import java.io.Serializable;
 
 import java.util.LinkedList;
 import java.util.HashMap;
@@ -17,19 +18,20 @@ import java.util.Date;
  * Customer class with payment verification
  * Can only view full details after payment
  */
-public class Customer extends Person implements Formulation {
+public class Customer extends Person implements Formulation,Serializable {
     private int customerID;
     private int age;
     private ConsumerSpecificInfo info;
     private LinkedList<Item> favoriteFormulations;
     private LinkedList<Feedback> feedbackHistory;
     private LinkedList<Item> availableFormulations;
+    private static final long serialVersionUID = 1L;
 
     // Payment tracking
     private HashMap<Integer, PurchaseRecord> purchasedItems; // itemID -> PurchaseRecord
 
-    private Keypad pad = new Keypad();
-    private Screen screen = new Screen();
+    private transient Keypad pad = new Keypad();
+    private transient Screen screen = new Screen();
 
     public Customer() {
         super();
@@ -570,12 +572,13 @@ public class Customer extends Person implements Formulation {
 
     // ============ INNER CLASS: PURCHASE RECORD ============
 
-    public static class PurchaseRecord {
+    public static class PurchaseRecord implements Serializable {
         private int itemID;
         private String itemName;
         private double price;
         private Date purchaseDate;
         private String paymentMethod;
+        private static final long serialVersionUID = 1L;
 
         public PurchaseRecord(int itemID, String itemName, double price, Date purchaseDate, String paymentMethod) {
             this.itemID = itemID;
@@ -596,5 +599,12 @@ public class Customer extends Person implements Formulation {
         public double getPrice() { return price; }
         public Date getPurchaseDate() { return purchaseDate; }
         public String getPaymentMethod() { return paymentMethod; }
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.pad = new Keypad();
+        this.screen = new Screen();
     }
 }

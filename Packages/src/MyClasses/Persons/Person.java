@@ -1,6 +1,7 @@
 package MyClasses.Persons;
+import java.io.Serializable;
 
-public class Person {
+public class Person implements Serializable{
     private int personID;
     private String name;
     private String address;
@@ -8,6 +9,7 @@ public class Person {
     private String dateofbirth;
     private String password;
     private Role role;
+    private static final long serialVersionUID = 1L;
 
 
     public Person(String name, String address, String contact, String dob, String password, Role role) {

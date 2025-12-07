@@ -1,14 +1,16 @@
 package MyClasses;
 
 import MyClasses.Persons.ConsumerSpecificInfo;
+import java.io.Serializable;
 
 import java.util.LinkedList;
 
 
-public class SideEffects {
+public class SideEffects implements Serializable {
     private ConsumerSpecificInfo exposedConsumerProfile;
     private LinkedList<String> symptoms;
     private LinkedList<String> remedies;
+    private static final long serialVersionUID = 1L;
 
     public SideEffects() {
         this.symptoms = new LinkedList<>();

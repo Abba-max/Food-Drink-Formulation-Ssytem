@@ -9,6 +9,7 @@ import MyClasses.Keyboard.Keypad;
 import MyClasses.Keyboard.Screen;
 import MyClasses.Restrictions.Veto;
 import MyClasses.Feedback;
+import java.io.Serializable;
 
 import java.util.LinkedList;
 import java.util.Date;
@@ -22,7 +23,7 @@ import java.util.Date;
  * - Set veto on formulations
  * - Manage system
  */
-public class Admin extends Person implements Formulation {
+public class Admin extends Person implements Formulation,Serializable {
     private int adminID;
 
     // System references
@@ -30,9 +31,10 @@ public class Admin extends Person implements Formulation {
     private LinkedList<Admin> admins;
     private LinkedList<Customer> customers;
     private LinkedList<Item> allFormulations;
+    private static final long serialVersionUID = 1L;
 
-    private Keypad pad = new Keypad();
-    private Screen screen = new Screen();
+    private transient Keypad pad = new Keypad();
+    private transient Screen screen = new Screen();
 
     public Admin() {
         super();
@@ -613,5 +615,15 @@ public class Admin extends Person implements Formulation {
                 ", managingAuthors=" + authors.size() +
                 ", managingFormulations=" + allFormulations.size() +
                 '}';
+    }
+
+    /**
+     * Reinitialize transient fields after deserialization
+     */
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.pad = new Keypad();
+        this.screen = new Screen();
     }
 }

@@ -1,15 +1,17 @@
 package MyClasses.Persons;
 
 import java.util.LinkedList;
+import java.io.Serializable;
 
 /**
  * Consumer specific information including profile and allergies
  */
-public class ConsumerSpecificInfo {
+public class ConsumerSpecificInfo implements Serializable {
     private String profile;
     private LinkedList<String> allergies;
     private String ageRange;
     private LinkedList<String> positiveImpacts;
+    private static final long serialVersionUID = 1L;
 
     public ConsumerSpecificInfo() {
         this.allergies = new LinkedList<>();

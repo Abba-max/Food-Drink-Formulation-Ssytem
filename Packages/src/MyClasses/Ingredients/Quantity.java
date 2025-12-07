@@ -1,11 +1,13 @@
 package MyClasses.Ingredients;
 
-public class  Quantity {
+import java.io.Serializable;
+
+public class  Quantity implements Serializable {
     public double weight;
     public double volume;
     public double fraction;
     public String unit;
-
+    private static final long serialVersionUID = 1L;
 
 
     public Quantity() {}

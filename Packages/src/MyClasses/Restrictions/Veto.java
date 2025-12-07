@@ -2,13 +2,16 @@ package MyClasses.Restrictions;
 
 import MyClasses.Persons.Person;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Veto {
+public class Veto implements Serializable {
     public boolean isVetoed;
     public String reason;
     public Date date;
     public Person initiator;
+    private static final long serialVersionUID = 1L;
+
 
     public Veto(boolean isVetoed, String reason, Date date,Person initiator ){
         this.isVetoed = isVetoed;

@@ -1,8 +1,11 @@
 package MyClasses.Conditions;
 
-public class Consumpcondition implements Conditions {
+import java.io.Serializable;
+
+public class Consumpcondition implements Conditions,Serializable {
     private double temperature;
     private double moisture;
+    private static final long serialVersionUID = 1L;
 
     public Consumpcondition() {}
 

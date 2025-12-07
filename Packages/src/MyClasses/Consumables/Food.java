@@ -12,11 +12,12 @@ import MyClasses.Persons.Author;
 import MyClasses.Persons.ConsumerSpecificInfo;
 import MyClasses.Restrictions.Trademarkinfo;
 import MyClasses.Restrictions.Veto;
+import java.io.Serializable;
 
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
-public class Food extends Item {
+public class Food extends Item implements Serializable {
     private int foodID;
     private LinkedList<Ingredient> ingredients;
     private Optcondition labCondition;
@@ -32,6 +33,7 @@ public class Food extends Item {
     private ConsumerSpecificInfo consumerProfile;
     private ConsumerSpecificInfo positiveImpacts;
     private SideEffects sideEffects;
+    private static final long serialVersionUID = 1L;
 
     public Food() {
         this.ingredients = new LinkedList<>();
@@ -168,7 +170,7 @@ public class Food extends Item {
 
     // Getters and Setters
     public int getFoodID() {
-        return foodID;
+        return this.foodID;
     }
 
     public void setFoodID(int foodID) {
@@ -188,11 +190,11 @@ public class Food extends Item {
     }
 
     public LinkedList<String> getStandards() {
-        return standards;
+        return this.standards;
     }
 
     public Prepprotocol getPrepprotocol() {
-        return prepprotocol;
+        return this.prepprotocol;
     }
 
     public void setPrepprotocol(Prepprotocol prepprotocol) {
@@ -204,11 +206,11 @@ public class Food extends Item {
     }
 
     public LinkedList<Feedback> getFeedbacks() {
-        return feedbacks;
+        return this.feedbacks;
     }
 
     public Conservecondition getConservecondition() {
-        return conservecondition;
+        return this.conservecondition;
     }
 
     public void setConservecondition(Conservecondition conservecondition) {
@@ -224,7 +226,7 @@ public class Food extends Item {
     }
 
     public Trademarkinfo getTrademarkInfo() {
-        return trademarkInfo;
+        return this.trademarkInfo;
     }
 
     public void setTrademarkInfo(Trademarkinfo trademarkInfo) {
@@ -232,11 +234,11 @@ public class Food extends Item {
     }
 
     public Veto getVeto() {
-        return veto;
+        return this.veto;
     }
 
     public double getAveragePricePerKg() {
-        return averagePricePerKg;
+        return this.averagePricePerKg;
     }
 
     public void setAveragePricePerKg(double averagePricePerKg) {
@@ -244,7 +246,7 @@ public class Food extends Item {
     }
 
     public ConsumerSpecificInfo getConsumerProfile() {
-        return consumerProfile;
+        return this.consumerProfile;
     }
 
     public void setConsumerProfile(ConsumerSpecificInfo consumerProfile) {
@@ -252,7 +254,7 @@ public class Food extends Item {
     }
 
     public ConsumerSpecificInfo getPositiveImpacts() {
-        return positiveImpacts;
+        return this.positiveImpacts;
     }
 
     public void setPositiveImpacts(ConsumerSpecificInfo positiveImpacts) {
@@ -260,7 +262,7 @@ public class Food extends Item {
     }
 
     public SideEffects getSideEffects() {
-        return sideEffects;
+        return this.sideEffects;
     }
 
     public void setSideEffects(SideEffects sideEffects) {

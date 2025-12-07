@@ -1,15 +1,17 @@
 package MyClasses;
 
 import java.util.Date;
+import java.io.Serializable;
 
 /**
  * Feedback class for consumer comments on formulations
  */
-public class Feedback {
+public class Feedback implements Serializable{
     private String comment;
     private boolean like;
     private String consumerName;
     private Date timestamp;
+    private static final long serialVersionUID = 1L;
 
     public Feedback() {
         this.timestamp = new Date();

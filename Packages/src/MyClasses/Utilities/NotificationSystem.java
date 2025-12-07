@@ -9,11 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
-/**
- * Notification System for Formulation Issues
- * Admins notify Authors about problems
- * Authors can view and respond to notifications
- */
+
 public class NotificationSystem {
 
     private static final String NOTIFICATIONS_FILE = "data/notifications.dat";

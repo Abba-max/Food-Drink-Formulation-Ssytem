@@ -1,14 +1,16 @@
 package MyClasses.Conditions;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
 /**
  * Preparation protocol class for managing step-by-step preparation instructions
 
  */
-public class Prepprotocol implements Conditions {
+public class Prepprotocol implements Conditions, Serializable {
     private LinkedList<String> steps;
     private LinkedList<Optcondition> stepConditions;
+    private static final long serialVersionUID = 1L;
 
 
     public Prepprotocol() {

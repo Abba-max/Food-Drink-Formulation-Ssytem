@@ -1,12 +1,15 @@
 package MyClasses.Conditions;
 
+import java.io.Serializable;
+
 // ========== Optcondition.java ==========
-public class Optcondition implements Conditions {
+public class Optcondition implements Conditions, Serializable {
     private double temp;
     private double pressure;
     private double moisture;
     private double vibration;
     private int period;
+    private static final long serialVersionUID = 1L;
 
     public Optcondition() {}
 

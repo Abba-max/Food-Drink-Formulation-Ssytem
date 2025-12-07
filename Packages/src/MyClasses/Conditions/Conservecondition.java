@@ -1,10 +1,12 @@
 package MyClasses.Conditions;
 
-public class Conservecondition implements Conditions {
+import java.io.Serializable;
+
+public class Conservecondition implements Conditions,Serializable {
     private double temp;
     private double moisture;
     private String container;
-
+    private static final long serialVersionUID = 1L;
     //constructors
     public Conservecondition() {}
 

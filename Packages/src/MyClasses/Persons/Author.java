@@ -10,6 +10,7 @@ import MyClasses.Ingredients.Quantity;
 import MyClasses.Keyboard.Keypad;
 import MyClasses.Keyboard.Screen;
 import MyClasses.Utilities.NotificationSystem;
+import java.io.Serializable;
 
 import java.util.LinkedList;
 
@@ -19,13 +20,14 @@ import java.util.LinkedList;
  * - Formulation modification
  * - Issue resolution
  */
-public class Author extends Person implements Formulation {
+public class Author extends Person implements Formulation, Serializable {
     private int authorID;
     private LinkedList<Item> formulatedItems;
     private NotificationSystem notificationSystem;
+    private static final long serialVersionUID = 1L;
 
-    private Keypad pad = new Keypad();
-    private Screen screen = new Screen();
+    private transient Keypad pad = new Keypad();
+    private transient Screen screen = new Screen();
 
     public Author() {
         super();
@@ -56,7 +58,7 @@ public class Author extends Person implements Formulation {
         screen.display("\n=== MY NOTIFICATIONS ===");
 
         LinkedList<NotificationSystem.Notification> notifications =
-            notificationSystem.getNotificationsForAuthor(authorID);
+                notificationSystem.getNotificationsForAuthor(authorID);
 
         if (notifications.isEmpty()) {
             screen.display("No notifications.");
@@ -96,7 +98,7 @@ public class Author extends Person implements Formulation {
 
         // Find the notification
         LinkedList<NotificationSystem.Notification> notifications =
-            notificationSystem.getNotificationsForAuthor(authorID);
+                notificationSystem.getNotificationsForAuthor(authorID);
 
         NotificationSystem.Notification targetNotif = null;
         for (NotificationSystem.Notification notif : notifications) {
@@ -525,6 +527,7 @@ public class Author extends Person implements Formulation {
 
     /**
      * Main formulation method - allows author to create new food or drink
+     *
      * @return The newly created Item (Food or Drink)
      */
     @Override
@@ -561,6 +564,7 @@ public class Author extends Person implements Formulation {
 
     /**
      * Creates a new food formulation
+     *
      * @return Food object with all specifications
      */
     private Food formulateFood() {
@@ -627,6 +631,7 @@ public class Author extends Person implements Formulation {
 
     /**
      * Creates a new drink formulation
+     *
      * @return Drink object with all specifications
      */
     private Drink formulateDrink() {
@@ -943,6 +948,7 @@ public class Author extends Person implements Formulation {
         }
         return count;
     }
+
     /**
      * Views detailed information about a specific formulation
      */
@@ -1120,6 +1126,7 @@ public class Author extends Person implements Formulation {
             screen.display("Recommendation: Review and address the warnings above.");
         }
     }
+
     /**
      * Creates preparation protocol with steps
      */
@@ -1151,5 +1158,10 @@ public class Author extends Person implements Formulation {
 
         return protocol;
     }
-
+    private void readObject(java.io.ObjectInputStream in)
+            throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.pad = new Keypad();
+        this.screen = new Screen();
+    }
 }

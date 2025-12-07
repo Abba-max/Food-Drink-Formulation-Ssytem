@@ -13,9 +13,10 @@ import MyClasses.Restrictions.Trademarkinfo;
 import MyClasses.Restrictions.Veto;
 
 import java.util.LinkedList;
+import java.io.Serializable;
 import java.util.stream.Collectors;
 
-public class Drink extends Item {
+public class Drink extends Item implements Serializable{
     private int drinkID;
     private LinkedList<Ingredient> ingredients;
     private Optcondition labCondition;
@@ -31,6 +32,7 @@ public class Drink extends Item {
     private ConsumerSpecificInfo consumerProfile;
     private ConsumerSpecificInfo positiveImpacts;
     private SideEffects sideEffects;
+    private static final long serialVersionUID = 1L;
 
     public Drink() {
         this.ingredients = new LinkedList<>();
