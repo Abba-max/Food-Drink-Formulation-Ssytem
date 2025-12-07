@@ -546,6 +546,8 @@ public class Main {
 
     // ============ AUTHOR MENU ============
 
+    // Replace the showAuthorMenu() method in Main.java with this:
+
     private void showAuthorMenu() {
         Author author = (Author) currentUser;
 
@@ -553,10 +555,11 @@ public class Main {
         screen.display("   AUTHOR MENU - " + author.getName());
         screen.display("=".repeat(60));
         screen.display("1. Create New Formulation");
-        screen.display("2. Consult My Formulations");
-        screen.display("3. Check Formulation Issues");
-        screen.display("4. View My Statistics");
-        screen.display("5. Save Data");
+        screen.display("2. Update Existing Formulation");  // NEW OPTION
+        screen.display("3. Consult My Formulations");
+        screen.display("4. Check Formulation Issues");
+        screen.display("5. View My Statistics");
+        screen.display("6. Save Data");
         screen.display("0. Logout");
         screen.display("\nEnter choice:");
 
@@ -574,19 +577,24 @@ public class Main {
                         saveDataToFiles();
                     }
                     break;
-                case 2:
+                case 2:  // NEW CASE
+                    author.updateFormulation();
+                    auditTrail.logAction("AUTHOR:" + author.getName(), "Updated formulation");
+                    saveDataToFiles();
+                    break;
+                case 3:
                     author.consultFormulation();
                     auditTrail.logAction("AUTHOR:" + author.getName(), "Consulted formulations");
                     break;
-                case 3:
+                case 4:
                     author.checkFormulationissues();
                     auditTrail.logAction("AUTHOR:" + author.getName(), "Checked formulation issues");
                     break;
-                case 4:
+                case 5:
                     showAuthorStatistics(author);
                     auditTrail.logAction("AUTHOR:" + author.getName(), "Viewed statistics");
                     break;
-                case 5:
+                case 6:
                     saveDataToFiles();
                     auditTrail.logAction("AUTHOR:" + author.getName(), "Manually saved system data");
                     break;
@@ -594,7 +602,7 @@ public class Main {
                     logout();
                     break;
                 default:
-                    screen.display("⚠ Invalid choice! Please enter a number between 0 and 5.");
+                    screen.display("⚠ Invalid choice! Please enter a number between 0 and 6.");
             }
         } catch (NumberFormatException e) {
             screen.display("⚠ Invalid input! Please enter a valid number.");

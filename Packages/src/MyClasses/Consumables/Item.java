@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 import java.util.Date;
 
-public class Item implements Serializable{
+public abstract class Item implements Serializable{
     public String name;
     public int itemID;
     public double price;
@@ -42,7 +42,8 @@ public class Item implements Serializable{
         this.author = author;
     }
 
-    public void setItemID(int foodID) {
+    public void setItemID(int itemID) {
+        this.itemID = itemID;
     }
 
     public int getItemID() {
@@ -56,6 +57,8 @@ public class Item implements Serializable{
     public String getExpiry_date() {
         return this.expiry_date;
     }
+
+    // Getters and Setters
 
     public void setExpiryDate(String string) {
     }

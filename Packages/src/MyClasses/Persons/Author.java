@@ -456,7 +456,747 @@ public class Author extends Person implements Formulation, Serializable {
 
         screen.display("✓ Lab conditions updated");
     }
+// Add this method to your Author class after the Formulate() method
 
+    /**
+     * Update existing formulation - comprehensive update menu
+     */
+    public void updateFormulation() {
+        screen.display("\n=== UPDATE FORMULATION ===");
+
+        if (formulatedItems.isEmpty()) {
+            screen.display("No formulations available to update.");
+            return;
+        }
+
+        // Display available formulations
+        screen.display("\nYour formulations:");
+        int count = 1;
+        for (Item item : formulatedItems) {
+            screen.display(count + ". " + item.getName() +
+                    " (ID: " + item.getItemID() +
+                    ", Type: " + (item instanceof Food ? "Food" : "Drink") + ")");
+            count++;
+        }
+
+        screen.display("\nEnter formulation ID to update:");
+        int id = pad.getInt();
+
+        // Find the formulation
+        Item targetItem = null;
+        for (Item item : formulatedItems) {
+            if (item.getItemID() == id) {
+                targetItem = item;
+                break;
+            }
+        }
+
+        if (targetItem == null) {
+            screen.display("⚠ Formulation not found with ID: " + id);
+            return;
+        }
+
+        // Show update menu for the selected formulation
+        showUpdateMenu(targetItem);
+    }
+
+    /**
+     * Display comprehensive update menu for a formulation
+     */
+    private void showUpdateMenu(Item item) {
+        boolean updating = true;
+
+        while (updating) {
+            screen.display("\n" + "=".repeat(60));
+            screen.display("   UPDATING: " + item.getName());
+            screen.display("   Type: " + (item instanceof Food ? "Food" : "Drink"));
+            screen.display("=".repeat(60));
+            screen.display("1. Update Basic Information (Name, Price)");
+            screen.display("2. Manage Ingredients");
+            screen.display("3. Update Lab Conditions");
+            screen.display("4. Update Preparation Protocol");
+            screen.display("5. Update Conservation Conditions");
+            screen.display("6. Update Consumption Conditions");
+            screen.display("7. Manage Standards");
+            screen.display("8. Update Consumer Profile");
+            screen.display("9. View Current Details");
+            screen.display("0. Finish Updating");
+            screen.display("\nEnter choice:");
+
+            try {
+                int choice = pad.getInt();
+
+                switch (choice) {
+                    case 1:
+                        updateBasicInformation(item);
+                        break;
+                    case 2:
+                        manageIngredients(item);
+                        break;
+                    case 3:
+                        updateLabConditions(item);
+                        break;
+                    case 4:
+                        updatePreparationProtocol(item);
+                        break;
+                    case 5:
+                        updateConservationConditions(item);
+                        break;
+                    case 6:
+                        updateConsumptionConditions(item);
+                        break;
+                    case 7:
+                        manageStandards(item);
+                        break;
+                    case 8:
+                        updateConsumerProfile(item);
+                        break;
+                    case 9:
+                        viewCurrentDetails(item);
+                        break;
+                    case 0:
+                        screen.display("\n✓ Formulation update completed!");
+                        updating = false;
+                        break;
+                    default:
+                        screen.display("⚠ Invalid choice! Please enter 0-9.");
+                }
+            } catch (NumberFormatException e) {
+                screen.display("⚠ Invalid input! Please enter a valid number.");
+            } catch (Exception e) {
+                screen.display("⚠ Error: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Update basic information (name, price, ID)
+     */
+    private void updateBasicInformation(Item item) {
+        screen.display("\n=== UPDATE BASIC INFORMATION ===");
+        screen.display("Current Information:");
+        screen.display("  Name: " + item.getName());
+        screen.display("  Price: $" + item.getPrice());
+
+        if (item instanceof Food) {
+            screen.display("  Food ID: " + ((Food) item).getFoodID());
+            screen.display("  Avg Price/Kg: $" + ((Food) item).getAveragePricePerKg());
+        } else if (item instanceof Drink) {
+            screen.display("  Drink ID: " + ((Drink) item).getDrinkID());
+            screen.display("  Avg Price/Kg: $" + ((Drink) item).getAveragePricePerKg());
+        }
+
+        screen.display("\nWhat would you like to update?");
+        screen.display("1. Name");
+        screen.display("2. Price");
+        screen.display("3. Average Price per Kg");
+        screen.display("4. Expiry Date");
+        screen.display("0. Cancel");
+
+        int choice = pad.getInt();
+
+        switch (choice) {
+            case 1:
+                screen.display("Enter new name:");
+                String newName = pad.getString();
+                if (newName != null && !newName.trim().isEmpty()) {
+                    item.setName(newName);
+                    screen.display("✓ Name updated to: " + newName);
+                } else {
+                    screen.display("⚠ Name cannot be empty!");
+                }
+                break;
+
+            case 2:
+                screen.display("Enter new price:");
+                double newPrice = pad.getDouble();
+                if (newPrice >= 0) {
+                    item.setPrice(newPrice);
+                    if (item instanceof Food) {
+                        ((Food) item).updateFoodInfo(item.getName(), newPrice);
+                    } else if (item instanceof Drink) {
+                        ((Drink) item).updateDrinkInfo(item.getName(), newPrice);
+                    }
+                    screen.display("✓ Price updated to: $" + newPrice);
+                } else {
+                    screen.display("⚠ Price must be non-negative!");
+                }
+                break;
+
+            case 3:
+                screen.display("Enter new average price per kg:");
+                double newAvgPrice = pad.getDouble();
+                if (newAvgPrice >= 0) {
+                    if (item instanceof Food) {
+                        ((Food) item).setAveragePricePerKg(newAvgPrice);
+                    } else if (item instanceof Drink) {
+                        ((Drink) item).setAveragePricePerKg(newAvgPrice);
+                    }
+                    screen.display("✓ Average price per kg updated to: $" + newAvgPrice);
+                } else {
+                    screen.display("⚠ Price must be non-negative!");
+                }
+                break;
+
+            case 4:
+                screen.display("Enter new expiry date (YYYY-MM-DD):");
+                String newExpiry = pad.getString();
+                item.setExpiryDate(newExpiry);
+                screen.display("✓ Expiry date updated to: " + newExpiry);
+                break;
+
+            case 0:
+                return;
+
+            default:
+                screen.display("⚠ Invalid choice!");
+        }
+    }
+
+    /**
+     * Comprehensive ingredient management
+     */
+    private void manageIngredients(Item item) {
+        boolean managing = true;
+
+        while (managing) {
+            screen.display("\n=== MANAGE INGREDIENTS ===");
+
+            LinkedList<Ingredient> ingredients = getIngredients(item);
+
+            if (ingredients != null && !ingredients.isEmpty()) {
+                screen.display("\nCurrent ingredients:");
+                int i = 1;
+                for (Ingredient ing : ingredients) {
+                    screen.display(i + ". " + ing.getName() + " (ID: " + ing.getIngredientID() + ")");
+                    if (ing.getQuantity() != null) {
+                        screen.display("   Weight: " + ing.getQuantity().getWeight() + "g, " +
+                                "Volume: " + ing.getQuantity().getVolume() + "ml");
+                    }
+                    i++;
+                }
+            } else {
+                screen.display("\nNo ingredients currently.");
+            }
+
+            screen.display("\nOptions:");
+            screen.display("1. Add new ingredient");
+            screen.display("2. Remove ingredient");
+            screen.display("3. Modify ingredient quantity");
+            screen.display("4. Replace ingredient");
+            screen.display("0. Return");
+
+            int choice = pad.getInt();
+
+            switch (choice) {
+                case 1:
+                    addIngredientToItem(item);
+                    break;
+                case 2:
+                    removeIngredientFromItem(item);
+                    break;
+                case 3:
+                    modifyIngredientQuantity(item);
+                    break;
+                case 4:
+                    replaceIngredient(item);
+                    break;
+                case 0:
+                    managing = false;
+                    break;
+                default:
+                    screen.display("⚠ Invalid choice!");
+            }
+        }
+    }
+
+    /**
+     * Replace an existing ingredient with a new one
+     */
+    private void replaceIngredient(Item item) {
+        screen.display("\n--- REPLACE INGREDIENT ---");
+        screen.display("Enter ingredient ID to replace:");
+        int oldIngID = pad.getInt();
+
+        // Check if ingredient exists
+        LinkedList<Ingredient> ingredients = getIngredients(item);
+        boolean found = false;
+
+        if (ingredients != null) {
+            for (Ingredient ing : ingredients) {
+                if (ing.getIngredientID() == oldIngID) {
+                    found = true;
+                    screen.display("Found: " + ing.getName());
+                    break;
+                }
+            }
+        }
+
+        if (!found) {
+            screen.display("⚠ Ingredient not found!");
+            return;
+        }
+
+        // Remove old ingredient
+        if (item instanceof Food) {
+            ((Food) item).removeIngredient(oldIngID);
+        } else if (item instanceof Drink) {
+            ((Drink) item).removeIngredient(oldIngID);
+        }
+
+        // Add new ingredient
+        screen.display("\nEnter new ingredient details:");
+        screen.display("Enter ingredient ID:");
+        int newIngID = pad.getInt();
+
+        screen.display("Enter ingredient name:");
+        String ingName = pad.getString();
+
+        screen.display("Enter weight (grams):");
+        double weight = pad.getDouble();
+
+        screen.display("Enter volume (ml):");
+        double volume = pad.getDouble();
+
+        screen.display("Enter fraction (0.0 to 1.0):");
+        double fraction = pad.getDouble();
+
+        screen.display("Enter unit:");
+        String unit = pad.getString();
+
+        Quantity quantity = new Quantity(weight, volume, fraction, unit);
+        Ingredient newIngredient = new Ingredient(newIngID, ingName, quantity);
+
+        if (item instanceof Food) {
+            ((Food) item).addIngredient(newIngredient);
+        } else if (item instanceof Drink) {
+            ((Drink) item).addIngredient(newIngredient);
+        }
+
+        screen.display("✓ Ingredient replaced successfully: " + ingName);
+    }
+
+    /**
+     * Update lab conditions
+     */
+    private void updateLabConditions(Item item) {
+        screen.display("\n=== UPDATE LAB CONDITIONS ===");
+
+        Optcondition currentCondition = null;
+        if (item instanceof Food) {
+            currentCondition = ((Food) item).getLabCondition();
+        } else if (item instanceof Drink) {
+            currentCondition = ((Drink) item).getLabCondition();
+        }
+
+        if (currentCondition != null) {
+            screen.display("\nCurrent lab conditions:");
+            screen.display("  Temperature: " + currentCondition.getTemp() + "°C");
+            screen.display("  Pressure: " + currentCondition.getPressure() + " kPa");
+            screen.display("  Moisture: " + currentCondition.getMoisture() + "%");
+            screen.display("  Vibration: " + currentCondition.getVibration());
+            screen.display("  Period: " + currentCondition.getPeriod() + " min");
+        } else {
+            screen.display("No lab conditions currently set.");
+        }
+
+        screen.display("\nEnter new lab conditions:");
+        Optcondition newConditions = createOptCondition();
+
+        if (item instanceof Food) {
+            ((Food) item).setLabCondition(newConditions);
+        } else if (item instanceof Drink) {
+            ((Drink) item).setLabCondition(newConditions);
+        }
+
+        screen.display("✓ Lab conditions updated successfully!");
+    }
+
+    /**
+     * Update preparation protocol
+     */
+    private void updatePreparationProtocol(Item item) {
+        screen.display("\n=== UPDATE PREPARATION PROTOCOL ===");
+
+        Prepprotocol protocol = null;
+        if (item instanceof Food) {
+            protocol = ((Food) item).getPrepprotocol();
+        } else if (item instanceof Drink) {
+            protocol = ((Drink) item).getPrepprotocol();
+        }
+
+        if (protocol == null || protocol.isEmpty()) {
+            screen.display("No preparation protocol found.");
+            screen.display("Create one? (1=Yes, 0=No)");
+            if (pad.getInt() == 1) {
+                protocol = createNewPrepProtocol();
+                if (item instanceof Food) {
+                    ((Food) item).setPrepprotocol(protocol);
+                } else if (item instanceof Drink) {
+                    ((Drink) item).setPrepprotocol(protocol);
+                }
+                screen.display("✓ Preparation protocol created!");
+            }
+            return;
+        }
+
+        boolean managing = true;
+
+        while (managing) {
+            // Display current protocol
+            screen.display("\n--- CURRENT PROTOCOL ---");
+            protocol.displayProtocol();
+
+            screen.display("\nOptions:");
+            screen.display("1. Add new step");
+            screen.display("2. Remove step");
+            screen.display("3. Modify step description");
+            screen.display("4. Modify step conditions");
+            screen.display("5. Clear all steps and start over");
+            screen.display("0. Return");
+
+            int choice = pad.getInt();
+
+            switch (choice) {
+                case 1:
+                    addStepToProtocol(protocol);
+                    break;
+                case 2:
+                    removeStepFromProtocol(protocol);
+                    break;
+                case 3:
+                    modifyStepInProtocol(protocol);
+                    break;
+                case 4:
+                    modifyStepConditions(protocol);
+                    break;
+                case 5:
+                    screen.display("Are you sure you want to clear all steps? (1=Yes, 0=No)");
+                    if (pad.getInt() == 1) {
+                        protocol.clear();
+                        screen.display("✓ All steps cleared.");
+                    }
+                    break;
+                case 0:
+                    managing = false;
+                    break;
+                default:
+                    screen.display("⚠ Invalid choice!");
+            }
+        }
+    }
+
+    /**
+     * Modify conditions for a specific step
+     */
+    private void modifyStepConditions(Prepprotocol protocol) {
+        screen.display("\nEnter step number to modify conditions:");
+        int stepIndex = pad.getInt() - 1; // Convert to 0-based
+
+        if (stepIndex < 0 || stepIndex >= protocol.getStepCount()) {
+            screen.display("⚠ Invalid step number!");
+            return;
+        }
+
+        screen.display("Enter new conditions for this step:");
+        Optcondition newConditions = createOptCondition();
+
+        if (protocol.updateStepCondition(stepIndex, newConditions)) {
+            screen.display("✓ Step conditions updated!");
+        } else {
+            screen.display("⚠ Failed to update conditions!");
+        }
+    }
+
+    /**
+     * Update conservation conditions
+     */
+    private void updateConservationConditions(Item item) {
+        screen.display("\n=== UPDATE CONSERVATION CONDITIONS ===");
+
+        Conservecondition currentCondition = null;
+        if (item instanceof Food) {
+            currentCondition = ((Food) item).getConservecondition();
+        } else if (item instanceof Drink) {
+            currentCondition = ((Drink) item).getConservecondition();
+        }
+
+        if (currentCondition != null) {
+            screen.display("\nCurrent conservation conditions:");
+            screen.display("  Temperature: " + currentCondition.getTemp() + "°C");
+            screen.display("  Moisture: " + currentCondition.getMoisture() + "%");
+            screen.display("  Container: " + currentCondition.getContainer());
+        } else {
+            screen.display("No conservation conditions currently set.");
+        }
+
+        screen.display("\nEnter new conservation conditions:");
+        Conservecondition newConditions = createConserveCondition();
+
+        if (item instanceof Food) {
+            ((Food) item).setConservecondition(newConditions);
+        } else if (item instanceof Drink) {
+            ((Drink) item).setConservecondition(newConditions);
+        }
+
+        screen.display("✓ Conservation conditions updated successfully!");
+    }
+
+    /**
+     * Update consumption conditions
+     */
+    private void updateConsumptionConditions(Item item) {
+        screen.display("\n=== UPDATE CONSUMPTION CONDITIONS ===");
+
+        Consumpcondition currentCondition = null;
+        if (item instanceof Food) {
+            currentCondition = ((Food) item).getConsumpcondition();
+        } else if (item instanceof Drink) {
+            currentCondition = ((Drink) item).getConsumpcondition();
+        }
+
+        if (currentCondition != null) {
+            screen.display("\nCurrent consumption conditions:");
+            screen.display("  Temperature: " + currentCondition.getTemperature() + "°C");
+            screen.display("  Moisture: " + currentCondition.getMoisture() + "%");
+        } else {
+            screen.display("No consumption conditions currently set.");
+        }
+
+        screen.display("\nEnter new consumption conditions:");
+        Consumpcondition newConditions = createConsumpCondition();
+
+        if (item instanceof Food) {
+            ((Food) item).setConsumpcondition(newConditions);
+        } else if (item instanceof Drink) {
+            ((Drink) item).setConsumpcondition(newConditions);
+        }
+
+        screen.display("✓ Consumption conditions updated successfully!");
+    }
+
+    /**
+     * Manage standards (add/remove)
+     */
+    private void manageStandards(Item item) {
+        boolean managing = true;
+
+        while (managing) {
+            screen.display("\n=== MANAGE STANDARDS ===");
+
+            LinkedList<String> standards = null;
+            if (item instanceof Food) {
+                standards = ((Food) item).getStandards();
+            } else if (item instanceof Drink) {
+                standards = ((Drink) item).getStandards();
+            }
+
+            if (standards != null && !standards.isEmpty()) {
+                screen.display("\nCurrent standards:");
+                int i = 1;
+                for (String standard : standards) {
+                    screen.display(i + ". " + standard);
+                    i++;
+                }
+            } else {
+                screen.display("\nNo standards currently defined.");
+            }
+
+            screen.display("\nOptions:");
+            screen.display("1. Add standard");
+            screen.display("2. Remove standard");
+            screen.display("3. Clear all standards");
+            screen.display("0. Return");
+
+            int choice = pad.getInt();
+
+            switch (choice) {
+                case 1:
+                    screen.display("Enter standard to add:");
+                    String newStandard = pad.getString();
+                    if (item instanceof Food) {
+                        ((Food) item).addStandard(newStandard);
+                    } else if (item instanceof Drink) {
+                        ((Drink) item).addStandard(newStandard);
+                    }
+                    screen.display("✓ Standard added!");
+                    break;
+
+                case 2:
+                    if (standards == null || standards.isEmpty()) {
+                        screen.display("⚠ No standards to remove!");
+                        break;
+                    }
+                    screen.display("Enter number of standard to remove:");
+                    int index = pad.getInt() - 1;
+                    if (index >= 0 && index < standards.size()) {
+                        String removed = standards.remove(index);
+                        screen.display("✓ Removed: " + removed);
+                    } else {
+                        screen.display("⚠ Invalid number!");
+                    }
+                    break;
+
+                case 3:
+                    if (standards != null) {
+                        screen.display("Are you sure? (1=Yes, 0=No)");
+                        if (pad.getInt() == 1) {
+                            standards.clear();
+                            screen.display("✓ All standards cleared!");
+                        }
+                    }
+                    break;
+
+                case 0:
+                    managing = false;
+                    break;
+
+                default:
+                    screen.display("⚠ Invalid choice!");
+            }
+        }
+    }
+
+    /**
+     * Update consumer profile
+     */
+    private void updateConsumerProfile(Item item) {
+        screen.display("\n=== UPDATE CONSUMER PROFILE ===");
+
+        ConsumerSpecificInfo currentProfile = null;
+        if (item instanceof Food) {
+            currentProfile = ((Food) item).getConsumerProfile();
+        } else if (item instanceof Drink) {
+            currentProfile = ((Drink) item).getConsumerProfile();
+        }
+
+        if (currentProfile != null && currentProfile.getProfile() != null) {
+            screen.display("\nCurrent profile: " + currentProfile.getProfile());
+        } else {
+            screen.display("No consumer profile currently set.");
+        }
+
+        screen.display("\nEnter new consumer profile:");
+        screen.display("(e.g., 'Adults 18-65, Health-conscious, Active lifestyle')");
+        String newProfile = pad.getString();
+
+        ConsumerSpecificInfo consumerProfile = new ConsumerSpecificInfo();
+        consumerProfile.setProfile(newProfile);
+
+        if (item instanceof Food) {
+            ((Food) item).setConsumerProfile(consumerProfile);
+        } else if (item instanceof Drink) {
+            ((Drink) item).setConsumerProfile(consumerProfile);
+        }
+
+        screen.display("✓ Consumer profile updated successfully!");
+    }
+
+    /**
+     * View current complete details of the formulation
+     */
+    private void viewCurrentDetails(Item item) {
+        screen.display("\n" + "=".repeat(70));
+        screen.display("   COMPLETE FORMULATION DETAILS");
+        screen.display("=".repeat(70));
+
+        // Basic info
+        screen.display("\n--- BASIC INFORMATION ---");
+        screen.display("Name: " + item.getName());
+        screen.display("Type: " + (item instanceof Food ? "Food" : "Drink"));
+        screen.display("ID: " + item.getItemID());
+        screen.display("Price: $" + item.getPrice());
+
+        if (item instanceof Food) {
+            Food food = (Food) item;
+            screen.display("Avg Price/Kg: $" + food.getAveragePricePerKg());
+
+            // Ingredients
+            if (food.getIngredients() != null && !food.getIngredients().isEmpty()) {
+                screen.display("\n--- INGREDIENTS ---");
+                for (Ingredient ing : food.getIngredients()) {
+                    screen.display("• " + ing.getName());
+                    if (ing.getQuantity() != null) {
+                        screen.display("  Weight: " + ing.getQuantity().getWeight() + "g, " +
+                                "Volume: " + ing.getQuantity().getVolume() + "ml");
+                    }
+                }
+            }
+
+            // Lab conditions
+            if (food.getLabCondition() != null) {
+                screen.display("\n--- LAB CONDITIONS ---");
+                screen.display(food.getLabCondition().toString());
+            }
+
+            // Preparation
+            if (food.getPrepprotocol() != null) {
+                food.getPrepprotocol().displayProtocol();
+            }
+
+            // Conservation
+            if (food.getConservecondition() != null) {
+                screen.display("\n--- CONSERVATION CONDITIONS ---");
+                screen.display(food.getConservecondition().toString());
+            }
+
+            // Consumption
+            if (food.getConsumpcondition() != null) {
+                screen.display("\n--- CONSUMPTION CONDITIONS ---");
+                screen.display(food.getConsumpcondition().toString());
+            }
+
+            // Standards
+            if (food.getStandards() != null && !food.getStandards().isEmpty()) {
+                screen.display("\n--- STANDARDS ---");
+                for (String standard : food.getStandards()) {
+                    screen.display("✓ " + standard);
+                }
+            }
+
+            // Consumer profile
+            if (food.getConsumerProfile() != null) {
+                screen.display("\n--- CONSUMER PROFILE ---");
+                screen.display(food.getConsumerProfile().getProfile());
+            }
+
+        } else if (item instanceof Drink) {
+            Drink drink = (Drink) item;
+            screen.display("Avg Price/Kg: $" + drink.getAveragePricePerKg());
+
+            // Similar display for Drink...
+            if (drink.getIngredients() != null && !drink.getIngredients().isEmpty()) {
+                screen.display("\n--- INGREDIENTS ---");
+                for (Ingredient ing : drink.getIngredients()) {
+                    screen.display("• " + ing.getName());
+                    if (ing.getQuantity() != null) {
+                        screen.display("  Weight: " + ing.getQuantity().getWeight() + "g, " +
+                                "Volume: " + ing.getQuantity().getVolume() + "ml");
+                    }
+                }
+            }
+
+            if (drink.getLabCondition() != null) {
+                screen.display("\n--- LAB CONDITIONS ---");
+                screen.display(drink.getLabCondition().toString());
+            }
+
+            if (drink.getPrepprotocol() != null) {
+                drink.getPrepprotocol().displayProtocol();
+            }
+
+            if (drink.getStandards() != null && !drink.getStandards().isEmpty()) {
+                screen.display("\n--- STANDARDS ---");
+                for (String standard : drink.getStandards()) {
+                    screen.display("✓ " + standard);
+                }
+            }
+        }
+
+        screen.display("\n" + "=".repeat(70));
+        screen.display("Press Enter to continue...");
+        pad.getString();
+    }
     // ============ HELPER METHODS ============
 
     private LinkedList<Ingredient> getIngredients(Item item) {
