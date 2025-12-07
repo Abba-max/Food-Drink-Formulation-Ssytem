@@ -1,8 +1,9 @@
-package MyClasses;
+package MyClasses.Utilities;
 
 import MyClasses.Consumables.Item;
 import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Drink;
+import MyClasses.Ingredients.Ingredient;
 import MyClasses.Persons.Admin;
 import MyClasses.Persons.Author;
 import MyClasses.Persons.Customer;

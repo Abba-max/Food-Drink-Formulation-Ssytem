@@ -5,7 +5,7 @@ import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Item;
 import MyClasses.Feedback;
 import MyClasses.Formulation;
-import MyClasses.Ingredient;
+import MyClasses.Ingredients.Ingredient;
 import MyClasses.Keyboard.Keypad;
 import MyClasses.Keyboard.Screen;
 

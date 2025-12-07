@@ -4,11 +4,10 @@ import MyClasses.Consumables.Drink;
 import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Item;
 import MyClasses.Formulation;
-import MyClasses.Ingredient;
+import MyClasses.Ingredients.Ingredient;
 import MyClasses.Keyboard.Keypad;
 import MyClasses.Keyboard.Screen;
-import MyClasses.Role;
-import MyClasses.Veto;
+import MyClasses.Restrictions.Veto;
 import MyClasses.Feedback;
 
 import java.util.LinkedList;

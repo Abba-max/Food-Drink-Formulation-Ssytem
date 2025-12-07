@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Utilities;
 
 import java.util.LinkedList;
 

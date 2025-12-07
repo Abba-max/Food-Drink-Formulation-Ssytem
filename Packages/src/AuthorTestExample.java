@@ -1,8 +1,8 @@
-//import MyClasses.Ingredient;
+//import MyClasses.Ingredients.Ingredient;
 //import MyClasses.Persons.Author;
 //import MyClasses.Consumables.Food;
 //import MyClasses.Consumables.Item;
-//import MyClasses.Quantity;
+//import MyClasses.Ingredients.Quantity;
 //
 ///**
 // * Example demonstrating how the Author class is used

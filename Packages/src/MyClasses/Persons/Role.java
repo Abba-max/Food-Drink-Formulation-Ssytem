@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Persons;
 
 public enum Role {
     CUSTOMER("Customer", 10),

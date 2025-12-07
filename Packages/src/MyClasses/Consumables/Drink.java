@@ -5,8 +5,12 @@ import MyClasses.Conditions.Conservecondition;
 import MyClasses.Conditions.Consumpcondition;
 import MyClasses.Conditions.Optcondition;
 import MyClasses.Conditions.Prepprotocol;
+import MyClasses.Ingredients.Ingredient;
+import MyClasses.Ingredients.Quantity;
 import MyClasses.Persons.Author;
 import MyClasses.Persons.ConsumerSpecificInfo;
+import MyClasses.Restrictions.Trademarkinfo;
+import MyClasses.Restrictions.Veto;
 
 import java.util.LinkedList;
 import java.util.stream.Collectors;

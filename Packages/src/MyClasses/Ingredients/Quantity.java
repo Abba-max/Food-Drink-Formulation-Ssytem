@@ -1,7 +1,4 @@
-package MyClasses;
-
-import java.io.Serializable;
-import java.util.Objects;
+package MyClasses.Ingredients;
 
 public class  Quantity {
     public double weight;

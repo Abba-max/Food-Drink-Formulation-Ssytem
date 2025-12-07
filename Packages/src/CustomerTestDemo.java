@@ -1,10 +1,10 @@
 //import MyClasses.Consumables.Food;
 //import MyClasses.Consumables.Drink;
 //import MyClasses.Consumables.Item;
-//import MyClasses.Ingredient;
+//import MyClasses.Ingredients.Ingredient;
 //import MyClasses.Persons.ConsumerSpecificInfo;
 //import MyClasses.Persons.Customer;
-//import MyClasses.Quantity;
+//import MyClasses.Ingredients.Quantity;
 //import MyClasses.Feedback;
 //
 //import java.util.LinkedList;

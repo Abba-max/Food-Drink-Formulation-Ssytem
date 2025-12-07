@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Restrictions;
 
 import java.util.Date;
 

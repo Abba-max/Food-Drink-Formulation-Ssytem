@@ -5,9 +5,11 @@ import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Item;
 import MyClasses.*;
 import MyClasses.Conditions.*;
+import MyClasses.Ingredients.Ingredient;
+import MyClasses.Ingredients.Quantity;
 import MyClasses.Keyboard.Keypad;
 import MyClasses.Keyboard.Screen;
-import MyClasses.NotificationSystem;
+import MyClasses.Utilities.NotificationSystem;
 
 import java.util.LinkedList;
 

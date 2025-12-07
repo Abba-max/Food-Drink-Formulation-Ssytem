@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Ingredients;
 
 public class Ingredient {
     public int ingredientID;

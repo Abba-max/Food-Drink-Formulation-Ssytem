@@ -1,4 +1,4 @@
-package MyClasses;
+package MyClasses.Utilities;
 
 import MyClasses.Persons.Admin;
 import MyClasses.Persons.Author;

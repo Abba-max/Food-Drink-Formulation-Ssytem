@@ -1,7 +1,5 @@
 package MyClasses.Persons;
 
-import MyClasses.Role;
-
 public class Person {
     private int personID;
     private String name;
