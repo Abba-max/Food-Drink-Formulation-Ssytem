@@ -5,7 +5,8 @@ import MyClasses.Persons.Admin;
 import MyClasses.Persons.Author;
 import MyClasses.Persons.Customer;
 import MyClasses.Utilities.AuditTrail;
-import MyClasses.Utilities.FileManager;
+import MyClasses.Database.DatabaseConfig;
+import MyClasses.Database.DatabaseManager;
 
 import java.util.LinkedList;
 import java.util.Date;
@@ -24,8 +25,8 @@ public class Main {
     // Audit Trail for tracking system activities
     private AuditTrail auditTrail;
 
-    // File Manager for persistence
-    private FileManager fileManager;
+    // Database Manager (replaces FileManager)
+    private DatabaseManager databaseManager;
 
     // Currently logged in user
     private Object currentUser;
@@ -41,55 +42,90 @@ public class Main {
         this.screen = new Screen();
 
         this.auditTrail = new AuditTrail();
-        this.fileManager = new FileManager();
 
-        // Load existing data from files
-//        loadDataFromFiles();
+        // Initialize Database Manager instead of File Manager
+        initializeDatabase();
+
+        // Load existing data from database
+        loadDataFromDatabase();
 
         // Create default admin if none exists
         initializeSystem();
     }
 
-
-    private void loadDataFromFiles() {
+    /**
+     * Initialize database connection
+     */
+    private void initializeDatabase() {
         try {
-            screen.display("Loading system data...");
+            screen.display("Connecting to database...");
+
+            // Optional: Load config from properties file
+            // DatabaseConfig.loadConfig("database.properties");
+
+            // Test connection
+            if (DatabaseConfig.testConnection()) {
+                this.databaseManager = new DatabaseManager();
+                screen.display("✓ Database connection established");
+                auditTrail.logAction("SYSTEM", "Database connected successfully");
+            } else {
+                screen.display("❌ Database connection failed!");
+                screen.display("Please check your database configuration in DatabaseConfig.java");
+                screen.display("Make sure MySQL is running and credentials are correct.");
+                auditTrail.logAction("SYSTEM", "Database connection failed");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            screen.display("❌ Error initializing database: " + e.getMessage());
+            screen.display("Stack trace:");
+            e.printStackTrace();
+            auditTrail.logAction("SYSTEM", "Database initialization error: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Load data from database (replaces loadDataFromFiles)
+     */
+    private void loadDataFromDatabase() {
+        try {
+            screen.display("Loading system data from database...");
 
             // Load users
-            LinkedList<Admin> loadedAdmins = fileManager.loadAdmins();
+            LinkedList<Admin> loadedAdmins = databaseManager.loadAdmins();
             if (loadedAdmins != null && !loadedAdmins.isEmpty()) {
                 admins = loadedAdmins;
             }
 
-            LinkedList<Author> loadedAuthors = fileManager.loadAuthors();
+            LinkedList<Author> loadedAuthors = databaseManager.loadAuthors();
             if (loadedAuthors != null && !loadedAuthors.isEmpty()) {
                 authors = loadedAuthors;
             }
 
-            LinkedList<Customer> loadedCustomers = fileManager.loadCustomers();
+            LinkedList<Customer> loadedCustomers = databaseManager.loadCustomers();
             if (loadedCustomers != null && !loadedCustomers.isEmpty()) {
                 customers = loadedCustomers;
             }
 
             // Load formulations
-            LinkedList<Item> loadedFormulations = fileManager.loadFormulations();
+            LinkedList<Item> loadedFormulations = databaseManager.loadFormulations();
             if (loadedFormulations != null && !loadedFormulations.isEmpty()) {
                 allFormulations = loadedFormulations;
             }
 
             // Load audit trail
-            AuditTrail loadedAudit = fileManager.loadAuditTrail();
+            AuditTrail loadedAudit = databaseManager.loadAuditTrail();
             if (loadedAudit != null) {
                 auditTrail = loadedAudit;
             }
-//
-//            screen.display("✓ Data loaded successfully");
-//            screen.display("  Admins: " + admins.size());
-//            screen.display("  Authors: " + authors.size());
-//            screen.display("  Customers: " + customers.size());
-//            screen.display("  Formulations: " + allFormulations.size());
 
-            auditTrail.logAction("SYSTEM", "Data loaded from files at " + new Date());
+            screen.display("✓ Data loaded successfully from database");
+            screen.display("  Admins: " + admins.size());
+            screen.display("  Authors: " + authors.size());
+            screen.display("  Customers: " + customers.size());
+            screen.display("  Formulations: " + allFormulations.size());
+
+            auditTrail.logAction("SYSTEM", "Data loaded from database at " + new Date());
 
         } catch (Exception e) {
             screen.display("⚠ Error loading data: " + e.getMessage());
@@ -99,33 +135,40 @@ public class Main {
     }
 
 
-    private void saveDataToFiles() {
+    /**
+     * Save data to database (replaces saveDataToFiles)
+     */
+    private void saveDataToDatabase() {
         try {
-            screen.display("\nSaving system data...");
+            screen.display("\nSaving system data to database...");
 
-            fileManager.saveAdmins(admins);
-            fileManager.saveAuthors(authors);
-            fileManager.saveCustomers(customers);
-            fileManager.saveFormulations(allFormulations);
-            fileManager.saveAuditTrail(auditTrail);
+            databaseManager.saveAdmins(admins);
+            databaseManager.saveAuthors(authors);
+            databaseManager.saveCustomers(customers);
+            databaseManager.saveFormulations(allFormulations);
+            databaseManager.saveAuditTrail(auditTrail);
 
-            screen.display("✓ All data saved successfully");
-            auditTrail.logAction("SYSTEM", "Data saved to files at " + new Date());
+            screen.display("✓ All data saved successfully to database");
+            auditTrail.logAction("SYSTEM", "Data saved to database at " + new Date());
 
         } catch (Exception e) {
             screen.display("⚠ Error saving data: " + e.getMessage());
+            e.printStackTrace();
             auditTrail.logAction("SYSTEM", "Failed to save data: " + e.getMessage());
         }
     }
 
-     // Initialize system with default admin
+    // Initialize system with default admin
     private void initializeSystem() {
         if (admins.isEmpty()) {
             Admin defaultAdmin = new Admin(1, "System Admin", "HQ", "+1-000-0000", "1980-01-01", "admin123");
             admins.add(defaultAdmin);
 
+            // Save to database immediately
+            databaseManager.saveAdmin(defaultAdmin);
+
             screen.display("System initialized with default admin account.");
-            screen.display("Username: admin | Password: admin123");
+            screen.display("Username: admin (ID: 1) | Password: admin123");
 
             auditTrail.logAction("SYSTEM", "Default admin account created");
         }
@@ -135,6 +178,7 @@ public class Main {
     public void start() {
         screen.display("\n" + "=".repeat(60));
         screen.display("   FOOD & DRINK FORMULATION MANAGEMENT SYSTEM");
+        screen.display("   [DATABASE VERSION]");
         screen.display("=".repeat(60));
 
         while (true) {
@@ -160,7 +204,7 @@ public class Main {
         screen.display("2. Login as Author");
         screen.display("3. Login as Customer");
         screen.display("4. Register as Customer");
-        screen.display("5. Save Data");
+        screen.display("5. Save Data to Database");
         screen.display("0. Exit");
         screen.display("\nEnter choice:");
 
@@ -181,7 +225,7 @@ public class Main {
                     registerCustomer();
                     break;
                 case 5:
-                    saveDataToFiles();
+                    saveDataToDatabase();
                     break;
                 case 0:
                     exitSystem();
@@ -206,15 +250,27 @@ public class Main {
         try {
             int save = pad.getInt();
             if (save == 1) {
-                saveDataToFiles();
+                saveDataToDatabase();
             }
 
             auditTrail.logAction("SYSTEM", "System shutdown at " + new Date());
+
+            // Close database connection
+            screen.display("Closing database connection...");
+            databaseManager.close();
+            DatabaseConfig.closeConnection();
+
             screen.display("Thank you for using the system. Goodbye!");
             System.exit(0);
 
         } catch (Exception e) {
             screen.display("Error during shutdown: " + e.getMessage());
+            try {
+                databaseManager.close();
+                DatabaseConfig.closeConnection();
+            } catch (Exception ex) {
+                // Ignore errors during cleanup
+            }
             System.exit(1);
         }
     }
@@ -399,8 +455,9 @@ public class Main {
 
             auditTrail.logAction("SYSTEM", "New customer registered: " + name + " (ID: " + id + ")");
 
-            // Auto-save after registration
-            saveDataToFiles();
+            // Auto-save to database after registration
+            databaseManager.saveCustomer(customer);
+            screen.display("✓ Customer saved to database");
 
         } catch (NumberFormatException e) {
             screen.display("⚠ Invalid number format! Please enter valid numeric values.");
@@ -437,8 +494,8 @@ public class Main {
         screen.display("4. View System Statistics");
         screen.display("5. View All Accounts");
         screen.display("6. View Audit Trail");
-        screen.display("7. Save Data");
-        screen.display("8. Create Backup");
+        screen.display("7. Save Data to Database");
+        screen.display("8. Create Database Backup");
         screen.display("0. Logout");
         screen.display("\nEnter choice:");
 
@@ -469,12 +526,12 @@ public class Main {
                     viewAuditTrail();
                     break;
                 case 7:
-                    saveDataToFiles();
+                    saveDataToDatabase();
                     auditTrail.logAction("ADMIN:" + admin.getName(), "Manually saved system data");
                     break;
                 case 8:
-                    createSystemBackup();
-                    auditTrail.logAction("ADMIN:" + admin.getName(), "Created system backup");
+                    createDatabaseBackup();
+                    auditTrail.logAction("ADMIN:" + admin.getName(), "Created database backup");
                     break;
                 case 0:
                     logout();
@@ -510,7 +567,8 @@ public class Main {
                         authors.add(newAuthor);
                         auditTrail.logAction("ADMIN:" + admin.getName(),
                                 "Created author account: " + newAuthor.getName() + " (ID: " + newAuthor.getAuthorID() + ")");
-                        saveDataToFiles();
+                        databaseManager.saveAuthor(newAuthor);
+                        screen.display("✓ Author saved to database");
                     }
                     break;
                 case 2:
@@ -519,7 +577,8 @@ public class Main {
                         admins.add(newAdmin);
                         auditTrail.logAction("ADMIN:" + admin.getName(),
                                 "Created admin account: " + newAdmin.getName() + " (ID: " + newAdmin.getAdminID() + ")");
-                        saveDataToFiles();
+                        databaseManager.saveAdmin(newAdmin);
+                        screen.display("✓ Admin saved to database");
                     }
                     break;
                 case 3:
@@ -546,8 +605,6 @@ public class Main {
 
     // ============ AUTHOR MENU ============
 
-    // Replace the showAuthorMenu() method in Main.java with this:
-
     private void showAuthorMenu() {
         Author author = (Author) currentUser;
 
@@ -555,11 +612,11 @@ public class Main {
         screen.display("   AUTHOR MENU - " + author.getName());
         screen.display("=".repeat(60));
         screen.display("1. Create New Formulation");
-        screen.display("2. Update Existing Formulation");  // NEW OPTION
+        screen.display("2. Update Existing Formulation");
         screen.display("3. Consult My Formulations");
         screen.display("4. Check Formulation Issues");
         screen.display("5. View My Statistics");
-        screen.display("6. Save Data");
+        screen.display("6. Save Data to Database");
         screen.display("0. Logout");
         screen.display("\nEnter choice:");
 
@@ -574,13 +631,14 @@ public class Main {
                         screen.display("✓ Formulation added to system catalog");
                         auditTrail.logAction("AUTHOR:" + author.getName(),
                                 "Created formulation: " + newItem.getName() + " (ID: " + newItem.getItemID() + ")");
-                        saveDataToFiles();
+                        databaseManager.saveItem(newItem);
+                        screen.display("✓ Formulation saved to database");
                     }
                     break;
-                case 2:  // NEW CASE
+                case 2:
                     author.updateFormulation();
                     auditTrail.logAction("AUTHOR:" + author.getName(), "Updated formulation");
-                    saveDataToFiles();
+                    saveDataToDatabase();
                     break;
                 case 3:
                     author.consultFormulation();
@@ -595,7 +653,7 @@ public class Main {
                     auditTrail.logAction("AUTHOR:" + author.getName(), "Viewed statistics");
                     break;
                 case 6:
-                    saveDataToFiles();
+                    saveDataToDatabase();
                     auditTrail.logAction("AUTHOR:" + author.getName(), "Manually saved system data");
                     break;
                 case 0:
@@ -625,7 +683,7 @@ public class Main {
         screen.display("2. My Purchases");
         screen.display("3. My Favorites");
         screen.display("4. My Profile");
-        screen.display("5. Save Data");
+        screen.display("5. Save Data to Database");
         screen.display("0. Logout");
         screen.display("\nEnter choice:");
 
@@ -650,7 +708,7 @@ public class Main {
                     auditTrail.logAction("CUSTOMER:" + customer.getName(), "Viewed profile");
                     break;
                 case 5:
-                    saveDataToFiles();
+                    saveDataToDatabase();
                     auditTrail.logAction("CUSTOMER:" + customer.getName(), "Manually saved system data");
                     break;
                 case 0:
@@ -780,20 +838,28 @@ public class Main {
     }
 
     /**
-     * Create system backup
+     * Create database backup
      */
-    private void createSystemBackup() {
+    private void createDatabaseBackup() {
         try {
-            screen.display("\n=== CREATE BACKUP ===");
-            screen.display("Enter backup name (or leave empty for timestamp):");
+            screen.display("\n=== CREATE DATABASE BACKUP ===");
+            screen.display("This will create a SQL dump of the current database.");
+            screen.display("Enter backup filename (without extension):");
             String backupName = pad.getString();
 
             if (backupName == null || backupName.trim().isEmpty()) {
                 backupName = "backup_" + System.currentTimeMillis();
             }
 
-            fileManager.createBackup(backupName);
-            screen.display("✓ Backup created successfully: " + backupName);
+            screen.display("\nCreating backup...");
+            screen.display("Note: You need to manually run mysqldump for full backup:");
+            screen.display("mysqldump -u root -p formulation_system > " + backupName + ".sql");
+            screen.display("\nAlternatively, saving current data to database...");
+
+            saveDataToDatabase();
+
+            screen.display("✓ Current data saved to database");
+            screen.display("Backup timestamp: " + new java.util.Date());
 
         } catch (Exception e) {
             screen.display("⚠ Error creating backup: " + e.getMessage());
@@ -835,8 +901,8 @@ public class Main {
             auditTrail.logAction(currentUserType + ":" + name, "Logged out at " + new Date());
             screen.display("\nLogging out " + name + "...");
 
-            // Auto-save on logout
-            saveDataToFiles();
+            // Auto-save to database on logout
+            saveDataToDatabase();
 
             currentUser = null;
             currentUserType = null;
