@@ -1,27 +1,24 @@
 package gui.screens;
 
-import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Food;
 import MyClasses.Ingredients.Ingredient;
 import MyClasses.Ingredients.Quantity;
-import MyClasses.Conditions.*;
 import MyClasses.Persons.Author;
-import MyClasses.Persons.ConsumerSpecificInfo;
-import gui.components.ScreenManager;
 import gui.components.DialogFactory;
+import gui.components.ScreenManager;
 import gui.components.UIComponents;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Stage;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-
-import java.util.Date;
-import java.util.Optional;
+import javafx.stage.Stage;
 
 /**
  * Create Formulation Screen

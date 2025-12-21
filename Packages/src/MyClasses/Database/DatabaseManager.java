@@ -1,18 +1,24 @@
 package MyClasses.Database;
 
-import MyClasses.Consumables.*;
-import MyClasses.Conditions.*;
-import MyClasses.Ingredients.*;
-import MyClasses.Persons.*;
-import MyClasses.Restrictions.*;
+import MyClasses.Conditions.Conservecondition;
+import MyClasses.Conditions.Consumpcondition;
+import MyClasses.Conditions.Optcondition;
+import MyClasses.Conditions.Prepprotocol;
+import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Food;
+import MyClasses.Consumables.Item;
 import MyClasses.Feedback;
-import MyClasses.SideEffects;
+import MyClasses.Ingredients.Ingredient;
+import MyClasses.Ingredients.Quantity;
+import MyClasses.Persons.Admin;
+import MyClasses.Persons.Author;
+import MyClasses.Persons.Customer;
+import MyClasses.Restrictions.Veto;
 import MyClasses.Utilities.AuditTrail;
 
 import java.sql.*;
-import java.util.LinkedList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Database Manager - Handles all database operations

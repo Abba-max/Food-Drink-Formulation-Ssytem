@@ -4,7 +4,6 @@ import MyClasses.Persons.Customer;
 import gui.components.ScreenManager;
 import gui.components.UIComponents;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;

@@ -1,15 +1,17 @@
 package gui.screens;
 
-import MyClasses.Consumables.Item;
-import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Drink;
-import MyClasses.Ingredients.Ingredient;
+import MyClasses.Consumables.Food;
+import MyClasses.Consumables.Item;
 import MyClasses.Feedback;
+import MyClasses.Ingredients.Ingredient;
 import gui.components.ScreenManager;
 import gui.components.UIComponents;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;

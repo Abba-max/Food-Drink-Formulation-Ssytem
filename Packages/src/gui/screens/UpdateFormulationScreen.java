@@ -1,8 +1,8 @@
 package gui.screens;
 
-import MyClasses.Consumables.Item;
-import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Food;
+import MyClasses.Consumables.Item;
 import MyClasses.Persons.Author;
 import gui.components.ScreenManager;
 import gui.components.UIComponents;
@@ -17,8 +17,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.stage.Stage;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
  * Update Formulation Screen

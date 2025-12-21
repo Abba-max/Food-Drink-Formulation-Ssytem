@@ -1,8 +1,8 @@
 package gui.screens;
 
-import MyClasses.Consumables.Item;
-import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Food;
+import MyClasses.Consumables.Item;
 import MyClasses.Feedback;
 import MyClasses.Persons.Author;
 import gui.components.ScreenManager;

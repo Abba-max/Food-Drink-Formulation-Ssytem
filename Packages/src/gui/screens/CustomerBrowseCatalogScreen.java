@@ -1,14 +1,12 @@
 package gui.screens;
 
-import MyClasses.Consumables.Item;
 import MyClasses.Consumables.Food;
-import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Item;
 import MyClasses.Persons.Customer;
-import gui.components.ScreenManager;
 import gui.components.DialogFactory;
+import gui.components.ScreenManager;
 import gui.components.UIComponents;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;

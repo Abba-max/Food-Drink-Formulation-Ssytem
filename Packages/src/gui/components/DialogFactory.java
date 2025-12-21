@@ -3,7 +3,6 @@ package gui.components;
 import MyClasses.Consumables.Item;
 import MyClasses.Ingredients.Ingredient;
 import MyClasses.Ingredients.Quantity;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -12,8 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import java.util.Optional;
 
 /**
  * Factory for creating common dialogs

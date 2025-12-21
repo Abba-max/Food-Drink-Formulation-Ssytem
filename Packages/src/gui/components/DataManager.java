@@ -1,18 +1,13 @@
 package gui.components;
 
-import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Item;
 import MyClasses.Database.DatabaseManager;
-import MyClasses.Ingredients.Ingredient;
-import MyClasses.Ingredients.Quantity;
 import MyClasses.Persons.Admin;
 import MyClasses.Persons.Author;
 import MyClasses.Persons.Customer;
 import MyClasses.Utilities.AuditTrail;
-import MyClasses.Feedback;
-import MyClasses.Conditions.*;
-import MyClasses.Persons.ConsumerSpecificInfo;
 
 import java.util.Date;
 import java.util.LinkedList;

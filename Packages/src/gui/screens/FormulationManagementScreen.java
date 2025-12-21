@@ -1,25 +1,23 @@
 package gui.screens;
 
-import MyClasses.Consumables.Item;
-import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Drink;
+import MyClasses.Consumables.Food;
+import MyClasses.Consumables.Item;
 import MyClasses.Persons.Admin;
-import gui.components.ScreenManager;
 import gui.components.DialogFactory;
+import gui.components.ScreenManager;
 import gui.components.UIComponents;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.stage.Modality;
-
-import java.util.Date;
 
 /**
  * Formulation Management Screen
