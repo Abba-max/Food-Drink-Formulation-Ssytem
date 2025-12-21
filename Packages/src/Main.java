@@ -281,14 +281,16 @@ public class Main {
         screen.display("\n=== ADMIN LOGIN ===");
 
         try {
-            screen.display("Enter Admin ID:");
-            int id = pad.getInt();
+//            screen.display("Enter Admin ID:");
+//            int id = pad.getInt();
+            screen.display("Enter Admin NAME:");
+            String name = pad.getString();
 
             screen.display("Enter password:");
             String password = pad.getString();
 
             for (Admin admin : admins) {
-                if (admin.getAdminID() == id && admin.getPassword().equals(password)) {
+                if (admin.getName().equals(name) && admin.getPassword().equals(password)) {
                     currentUser = admin;
                     currentUserType = "ADMIN";
 
@@ -306,7 +308,7 @@ public class Main {
             }
 
             screen.display("⚠ Invalid credentials!");
-            auditTrail.logAction("SYSTEM", "Failed admin login attempt for ID: " + id);
+            auditTrail.logAction("SYSTEM", "Failed admin login attempt for Admin: " + name);
 
         } catch (NumberFormatException e) {
             screen.display("⚠ Invalid ID format! Please enter a valid number.");
@@ -321,14 +323,17 @@ public class Main {
         screen.display("\n=== AUTHOR LOGIN ===");
 
         try {
-            screen.display("Enter Author ID:");
-            int id = pad.getInt();
+//            screen.display("Enter Author ID:");
+//            int id = pad.getInt();
+
+            screen.display("Enter Author NAME:");
+            String name = pad.getString();
 
             screen.display("Enter password:");
             String password = pad.getString();
 
             for (Author author : authors) {
-                if (author.getAuthorID() == id && author.getPassword().equals(password)) {
+                if (author.getName().equals(name) && author.getPassword().equals(password)) {
                     currentUser = author;
                     currentUserType = "AUTHOR";
                     screen.display("\n✓ Login successful!");
@@ -341,7 +346,7 @@ public class Main {
 
             screen.display("⚠ Invalid credentials!");
             screen.display("Note: Authors must be created by an Admin first.");
-            auditTrail.logAction("SYSTEM", "Failed author login attempt for ID: " + id);
+            auditTrail.logAction("SYSTEM", "Failed author login attempt for Author: " + name);
 
         } catch (NumberFormatException e) {
             screen.display("⚠ Invalid ID format! Please enter a valid number.");
@@ -356,14 +361,16 @@ public class Main {
         screen.display("\n=== CUSTOMER LOGIN ===");
 
         try {
-            screen.display("Enter Customer ID:");
-            int id = pad.getInt();
+//            screen.display("Enter Customer ID:");
+//            int id = pad.getInt();
+            screen.display("Enter Customer NAME:");
+            String name = pad.getString();
 
             screen.display("Enter password:");
             String password = pad.getString();
 
             for (Customer customer : customers) {
-                if (customer.getCustomerID() == id && customer.getPassword().equals(password)) {
+                if (customer.getName().equals(name) && customer.getPassword().equals(password)) {
                     currentUser = customer;
                     currentUserType = "CUSTOMER";
 
@@ -380,7 +387,7 @@ public class Main {
             }
 
             screen.display("⚠ Invalid credentials!");
-            auditTrail.logAction("SYSTEM", "Failed customer login attempt for ID: " + id);
+            auditTrail.logAction("SYSTEM", "Failed customer login attempt for Customer: " + name);
 
         } catch (NumberFormatException e) {
             screen.display("⚠ Invalid ID format! Please enter a valid number.");

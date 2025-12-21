@@ -15,6 +15,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+//import javafx.stage.Modality;
+//import javafx.scene.control.ComboBox;
+//import javafx.scene.control.ListView;
+//import javafx.scene.control.SelectionMode;
+//import javafx.collections.FXCollections;
+//import javafx.collections.ObservableList;
+//import MyClasses.Consumables.Food;
+//import MyClasses.Consumables.Drink;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -234,12 +242,12 @@ public class Main_GUI extends Application {
         formBox.setPadding(new Insets(40));
         formBox.setMaxWidth(400);
 
-        Label lblId = new Label(userType + " ID:");
+        Label lblId = new Label(userType + " Name:");
         lblId.setTextFill(Color.WHITE);
         lblId.setFont(Font.font("Arial", FontWeight.BOLD, 14));
 
         TextField txtId = new TextField();
-        txtId.setPromptText("Enter your ID");
+        txtId.setPromptText("Enter your Name");
         txtId.setStyle("-fx-font-size: 14px;");
 
         Label lblPassword = new Label("Password:");
@@ -263,9 +271,9 @@ public class Main_GUI extends Application {
         // Login action
         btnLogin.setOnAction(e -> {
             try {
-                int id = Integer.parseInt(txtId.getText());
+                String name = txtId.getText();
                 String password = txtPassword.getText();
-                performLogin(userType, id, password);
+                performLogin(userType, name, password);
             } catch (NumberFormatException ex) {
                 showError("Invalid Input", "Please enter a valid numeric ID");
             }
@@ -287,14 +295,14 @@ public class Main_GUI extends Application {
     /**
      * Perform login authentication
      */
-    private void performLogin(String userType, int id, String password) {
+    private void performLogin(String userType, String name, String password) {
         boolean loginSuccessful = false;
         String userName = "";
 
         switch (userType) {
             case "ADMIN":
                 for (Admin admin : admins) {
-                    if (admin.getAdminID() == id && admin.getPassword().equals(password)) {
+                    if (admin.getName().equals(name) && admin.getPassword().equals(password)) {
                         currentUser = admin;
                         currentUserType = "ADMIN";
                         userName = admin.getName();
@@ -313,7 +321,7 @@ public class Main_GUI extends Application {
 
             case "AUTHOR":
                 for (Author author : authors) {
-                    if (author.getAuthorID() == id && author.getPassword().equals(password)) {
+                    if (author.getName().equals(name) && author.getPassword().equals(password)) {
                         currentUser = author;
                         currentUserType = "AUTHOR";
                         userName = author.getName();
@@ -325,7 +333,7 @@ public class Main_GUI extends Application {
 
             case "CUSTOMER":
                 for (Customer customer : customers) {
-                    if (customer.getCustomerID() == id && customer.getPassword().equals(password)) {
+                    if (customer.getName().equals(name) && customer.getPassword().equals(password)) {
                         currentUser = customer;
                         currentUserType = "CUSTOMER";
                         userName = customer.getName();
@@ -346,7 +354,7 @@ public class Main_GUI extends Application {
             showInformation("Login Successful", "Welcome, " + userName + "!");
             showUserDashboard();
         } else {
-            auditTrail.logAction("SYSTEM", "Failed " + userType + " login attempt for ID: " + id);
+            auditTrail.logAction("SYSTEM", "Failed " + userType + " login attempt for  name: " + name);
             showError("Login Failed", "Invalid credentials. Please try again.");
         }
     }
@@ -920,7 +928,7 @@ public class Main_GUI extends Application {
                 Label lblId = new Label("ID: " + item.getItemID());
                 lblId.setTextFill(Color.LIGHTGRAY);
 
-                Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
+                Label lblPrice = new Label("Price: FCFA" + String.format("%.2f", item.getPrice()));
                 lblPrice.setTextFill(Color.LIGHTGREEN);
 
                 // Check veto status
@@ -1401,6 +1409,9 @@ public class Main_GUI extends Application {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+
+
 
     // ============ MAIN METHOD ============
 
