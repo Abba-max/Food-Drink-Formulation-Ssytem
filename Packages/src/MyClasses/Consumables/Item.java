@@ -1,6 +1,5 @@
 package MyClasses.Consumables;
 
-import MyClasses.Conditions.Prepprotocol;
 import MyClasses.Persons.Author;
 import java.io.Serializable;
 
@@ -12,6 +11,9 @@ public abstract class Item implements Serializable{
     public double price;
     public Date entry_date;
     public String expiry_date;
+
+
+
     public Author author;
     private static final long serialVersionUID = 1L;
 
@@ -59,7 +61,18 @@ public abstract class Item implements Serializable{
     }
 
     // Getters and Setters
+    public void setEntryDate(Date entry_date) {
+        this.entry_date = entry_date;
+    }
+    public void setExpiryDate(String expiry_date) {
+        this.expiry_date = expiry_date;
+    }
 
-    public void setExpiryDate(String string) {
+    public String getExpiryDate() {
+        return this.expiry_date;
+    }
+
+    public Date getEntryDate() {
+        return entry_date;
     }
 }

@@ -280,6 +280,7 @@ public class Food extends Item implements Serializable {
                 '}';
     }
 
-    public void setExpiryDate(String string) {
+    public void setExpiry_Date(String string) {
+
     }
 }
