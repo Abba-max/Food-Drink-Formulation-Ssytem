@@ -36,6 +36,7 @@ public class Author extends Person implements Formulation, Serializable {
 
     public Author(int authorID, String name, String address, String contact, String dob) {
         super();
+        this.setName(name);
         this.authorID = authorID;
         this.formulatedItems = new LinkedList<>();
     }

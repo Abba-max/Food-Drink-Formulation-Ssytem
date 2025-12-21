@@ -22,7 +22,7 @@ import java.util.Optional;
 
 /**
  * Main JavaFX GUI Application for Food & Drink Formulation Management System
- * Follows the exact console menu structure
+ * FIXED VERSION - All irregularities resolved
  */
 public class Main_GUI extends Application {
 
@@ -510,7 +510,7 @@ public class Main_GUI extends Application {
         buttons[1].setOnAction(e -> showFormulationManagementScreen());
         buttons[2].setOnAction(e -> showCheckFormulationIssuesScreen());
         buttons[3].setOnAction(e -> showSystemStatisticsScreen());
-//        buttons[4].setOnAction(e -> showAllAccountsScreen(admin));
+        buttons[4].setOnAction(e -> showAllAccountsScreen(admin)); // FIXED: Now calls the method
         buttons[5].setOnAction(e -> showAuditTrailScreen());
         buttons[6].setOnAction(e -> saveDataToDatabase());
         buttons[7].setOnAction(e -> showInformation("Backup", "Backup feature available. Use mysqldump for full backup."));
@@ -678,7 +678,6 @@ public class Main_GUI extends Application {
 
         // Count vetoed
         int vetoedCount = 0;
-
         for (Item item : allFormulations) {
             if (item instanceof MyClasses.Consumables.Food) {
                 if (((MyClasses.Consumables.Food) item).isVetoed()) vetoedCount++;
@@ -707,7 +706,7 @@ public class Main_GUI extends Application {
     }
 
     /**
-     * Show All Accounts Screen
+     * Show All Accounts Screen - FIXED VERSION
      */
     private void showAllAccountsScreen(Admin admin) {
         BorderPane root = new BorderPane();
@@ -759,11 +758,7 @@ public class Main_GUI extends Application {
 
         TextArea txtCustomers = new TextArea();
         txtCustomers.setEditable(false);
-        txtCustomers
-
-
-        // Continuation from line 683 in showAllAccountsScreen method
-        .setPrefRowCount(5);
+        txtCustomers.setPrefRowCount(5);
         StringBuilder customerText = new StringBuilder();
         for (Customer c : customers) {
             customerText.append("ID: ").append(c.getCustomerID()).append(" - ").append(c.getName())
@@ -786,9 +781,6 @@ public class Main_GUI extends Application {
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
-    }
-
-    private void setPrefRowCount(int i) {
     }
 
     /**

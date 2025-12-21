@@ -15,7 +15,7 @@ public class DatabaseConfig {
     // Database connection parameters
     private static final String DB_URL = "jdbc:mysql://localhost:3306/formulation_system";
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
+    private static final String DB_PASSWORD = "root";
 
     // Connection pool settings
     private static final int MAX_CONNECTIONS = 10;
