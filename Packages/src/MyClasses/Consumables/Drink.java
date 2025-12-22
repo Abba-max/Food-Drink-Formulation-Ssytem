@@ -263,4 +263,12 @@ public class Drink extends Item implements Serializable{
                 ", vetoed=" + isVetoed() +
                 '}';
     }
+
+    public void setAlcoholContent(double v) {
+
+    }
+
+    public Object getAlcoholContent() {
+        return null;
+    }
 }

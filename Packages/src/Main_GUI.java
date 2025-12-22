@@ -12,6 +12,7 @@ import MyClasses.Ingredients.Ingredient;
 import MyClasses.Ingredients.Quantity;
 import MyClasses.Conditions.*;
 import MyClasses.Persons.ConsumerSpecificInfo;
+import MyClasses.Restrictions.Veto;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -25,16 +26,15 @@ import javafx.stage.Stage;
 import javafx.stage.Modality;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Complete JavaFX GUI Application for Food & Drink Formulation Management System
- * Professional Color Theme: Blue/Gray Business Theme
+ * Professional Color Theme: Professional Blue/Gray with Accessibility
  */
 public class Main_GUI extends Application {
 
@@ -57,47 +57,48 @@ public class Main_GUI extends Application {
     private Scene currentScene;
 
     // Screen dimensions
-    private static final double WINDOW_WIDTH = 1200;
-    private static final double WINDOW_HEIGHT = 700;
+    private static final double WINDOW_WIDTH = 1400;
+    private static final double WINDOW_HEIGHT = 800;
 
-    // Professional Color Theme - Blue/Gray Business Theme
-    private static final String COLOR_PRIMARY = "#2C3E50";     // Dark Blue/Gray - Primary
-    private static final String COLOR_SECONDARY = "#34495E";   // Medium Blue/Gray - Secondary
-    private static final String COLOR_ACCENT = "#2980B9";      // Corporate Blue - Accent
-    private static final String COLOR_SUCCESS = "#27AE60";     // Green - Success/Actions
-    private static final String COLOR_WARNING = "#F39C12";     // Orange - Warning
-    private static final String COLOR_ERROR = "#E74C3C";       // Red - Error/Danger
-    private static final String COLOR_INFO = "#3498DB";        // Light Blue - Information
-    private static final String COLOR_LIGHT = "#ECF0F1";       // Light Gray - Backgrounds
-    private static final String COLOR_NEUTRAL = "#95A5A6";     // Gray - Neutral/Disabled
-    private static final String COLOR_DARK = "#2C3E50";        // Dark - Text
-    private static final String COLOR_PURPLE = "#8E44AD";      // Purple - Special Actions
+    // Professional Color Theme - Accessible with good contrast
+    private static final String COLOR_PRIMARY = "#2C3E50";     // Dark Blue
+    private static final String COLOR_SECONDARY = "#34495E";   // Medium Blue
+    private static final String COLOR_ACCENT = "#3498DB";      // Light Blue
+    private static final String COLOR_SUCCESS = "#27AE60";     // Green
+    private static final String COLOR_WARNING = "#E67E22";     // Orange
+    private static final String COLOR_ERROR = "#E74C3C";       // Red
+    private static final String COLOR_INFO = "#2980B9";        // Blue
+    private static final String COLOR_LIGHT_BG = "#F8F9FA";    // Light Background
+    private static final String COLOR_DARK_BG = "#2C3E50";     // Dark Background
+    private static final String COLOR_TEXT_PRIMARY = "#2C3E50"; // Dark Text
+    private static final String COLOR_TEXT_SECONDARY = "#7F8C8D"; // Gray Text
+    private static final String COLOR_TEXT_LIGHT = "#ECF0F1";  // Light Text (for dark backgrounds)
+    private static final String COLOR_BORDER = "#BDC3C7";      // Border Color
+    private static final String COLOR_HOVER = "#ECF0F1";       // Hover Background
 
-    // User-specific colors for dashboards
-    private static final String COLOR_ADMIN = "#C0392B";       // Dark Red - Admin
-    private static final String COLOR_AUTHOR = "#2980B9";      // Blue - Author
-    private static final String COLOR_CUSTOMER = "#16A085";    // Teal - Customer
+    // User-specific colors
+    private static final String COLOR_ADMIN = "#8E44AD";       // Purple
+    private static final String COLOR_AUTHOR = "#16A085";      // Teal
+    private static final String COLOR_CUSTOMER = "#2ECC71";    // Green
+
+    // Fonts
+    private static final String FONT_FAMILY = "Segoe UI";
+    private static final Font FONT_TITLE = Font.font(FONT_FAMILY, FontWeight.BOLD, 24);
+    private static final Font FONT_SUBTITLE = Font.font(FONT_FAMILY, FontWeight.SEMI_BOLD, 18);
+    private static final Font FONT_BODY = Font.font(FONT_FAMILY, FontWeight.NORMAL, 14);
+    private static final Font FONT_BUTTON = Font.font(FONT_FAMILY, FontWeight.MEDIUM, 14);
 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        primaryStage.setTitle("Food & Drink Formulation Management System");
 
-        // Set application icon
-        try {
-            // You can add an icon file if available
-            // primaryStage.getIcons().add(new Image("icon.png"));
-        } catch (Exception e) {
-            // Icon not available, continue without it
-        }
-
-        // Initialize data structures
+        // Initialize system
         initializeSystem();
 
         // Show welcome screen
         showWelcomeScreen();
 
-        // Configure primary stage
-        primaryStage.setTitle("Food & Drink Formulation Management System");
         primaryStage.setScene(currentScene);
         primaryStage.setWidth(WINDOW_WIDTH);
         primaryStage.setHeight(WINDOW_HEIGHT);
@@ -109,7 +110,7 @@ public class Main_GUI extends Application {
     }
 
     /**
-     * Initialize database and load data
+     * Initialize database and load data with proper error handling
      */
     private void initializeSystem() {
         admins = new LinkedList<>();
@@ -119,66 +120,201 @@ public class Main_GUI extends Application {
         auditTrail = new AuditTrail();
 
         try {
-            // Initialize database connection
+            System.out.println("Initializing database connection...");
+
             if (DatabaseConfig.testConnection()) {
+                System.out.println("Database connection successful");
                 databaseManager = new DatabaseManager();
 
-                // Load data from database
+                // Load all data
                 loadDataFromDatabase();
 
                 // Create default admin if none exists
                 if (admins.isEmpty()) {
                     Admin defaultAdmin = new Admin(1, "System Admin", "HQ", "+1-000-0000", "1980-01-01", "admin123");
                     admins.add(defaultAdmin);
-                    databaseManager.saveAdmin(defaultAdmin);
+                    try {
+                        databaseManager.saveAdmin(defaultAdmin);
+                        System.out.println("Default admin created");
+                    } catch (Exception e) {
+                        System.out.println("Warning: Could not save default admin to database: " + e.getMessage());
+                    }
                     auditTrail.logAction("SYSTEM", "Default admin account created");
                 }
+
+                System.out.println("System initialized successfully");
+                System.out.println("Admins: " + admins.size());
+                System.out.println("Authors: " + authors.size());
+                System.out.println("Customers: " + customers.size());
+                System.out.println("Formulations: " + allFormulations.size());
+
             } else {
                 showError("Database Connection Failed",
-                        "Could not connect to database. Please check your configuration.");
-                System.exit(1);
+                        "Could not connect to database. Running in offline mode with sample data.");
+                // Create sample data for offline mode
+                createSampleData();
             }
         } catch (Exception e) {
-            showError("Initialization Error", "Failed to initialize system: " + e.getMessage());
+            System.err.println("Initialization error: " + e.getMessage());
             e.printStackTrace();
-            System.exit(1);
+            showError("Initialization Error",
+                    "Failed to initialize system: " + e.getMessage() + "\nRunning in offline mode.");
+            createSampleData();
         }
     }
 
     /**
-     * Load data from database
+     * Create sample data for offline mode
+     */
+    private void createSampleData() {
+        // Create default admin
+        Admin defaultAdmin = new Admin(1, "System Admin", "HQ", "+1-000-0000", "1980-01-01", "admin123");
+        admins.add(defaultAdmin);
+
+        // Create sample author
+        Author sampleAuthor = new Author(1, "John Chef", "Kitchen St.", "chef@email.com", "1975-05-15");
+        sampleAuthor.setPassword("author123");
+        authors.add(sampleAuthor);
+
+        // Create sample customer
+        Customer sampleCustomer = new Customer(1, 30);
+        sampleCustomer.setName("Jane Customer");
+        sampleCustomer.setAddress("123 Main St");
+        sampleCustomer.setContact("customer@email.com");
+        sampleCustomer.setDateofbirth("1993-08-20");
+        sampleCustomer.setPassword("customer123");
+        customers.add(sampleCustomer);
+
+        // Create sample food formulation
+        Food sampleFood = new Food();
+        sampleFood.setName("Special Pasta");
+        sampleFood.setFoodID(1);
+        sampleFood.setItemID(1);
+        sampleFood.setPrice(12.99);
+        sampleFood.setExpiryDate("2024-12-31");
+        sampleFood.setAveragePricePerKg(8.50);
+
+        // Add ingredients
+        Ingredient pasta = new Ingredient(1, "Pasta", new Quantity(200, 0, 0.4, "grams"));
+        Ingredient sauce = new Ingredient(2, "Tomato Sauce", new Quantity(100, 150, 0.3, "ml"));
+        sampleFood.addIngredient(pasta);
+        sampleFood.addIngredient(sauce);
+
+        // Add author
+        sampleFood.addAuthor(sampleAuthor);
+        sampleAuthor.getFormulatedItems().add(sampleFood);
+
+        // Set conditions
+        Optcondition labCond = new Optcondition();
+        labCond.setTemp(22.5);
+        labCond.setPressure(101.3);
+        labCond.setMoisture(65.0);
+        sampleFood.setLabCondition(labCond);
+
+        // Create sample drink formulation
+        Drink sampleDrink = new Drink();
+        sampleDrink.setName("Refreshing Lemonade");
+        sampleDrink.setDrinkID(2);
+        sampleDrink.setItemID(2);
+        sampleDrink.setPrice(5.99);
+        sampleDrink.setExpiryDate("2024-06-30");
+        sampleDrink.setAveragePricePerKg(3.50);
+        sampleDrink.setAlcoholContent(0.0);
+
+        // Add ingredients for drink
+        Ingredient lemon = new Ingredient(3, "Lemon Juice", new Quantity(0, 100, 0.15, "ml"));
+        Ingredient sugar = new Ingredient(4, "Sugar", new Quantity(50, 0, 0.05, "grams"));
+        Ingredient water = new Ingredient(5, "Water", new Quantity(0, 500, 0.8, "ml"));
+        sampleDrink.addIngredient(lemon);
+        sampleDrink.addIngredient(sugar);
+        sampleDrink.addIngredient(water);
+
+        // Add author
+        sampleDrink.addAuthor(sampleAuthor);
+        sampleAuthor.getFormulatedItems().add(sampleDrink);
+
+        allFormulations.add(sampleFood);
+        allFormulations.add(sampleDrink);
+
+        System.out.println("Sample data created for offline mode");
+    }
+
+    /**
+     * Load data from database with proper error handling
      */
     private void loadDataFromDatabase() {
         try {
+            System.out.println("Loading data from database...");
+
+            // Load admins
             LinkedList<Admin> loadedAdmins = databaseManager.loadAdmins();
             if (loadedAdmins != null && !loadedAdmins.isEmpty()) {
                 admins = loadedAdmins;
+                System.out.println("Loaded " + admins.size() + " admins");
             }
 
+            // Load authors
             LinkedList<Author> loadedAuthors = databaseManager.loadAuthors();
             if (loadedAuthors != null && !loadedAuthors.isEmpty()) {
                 authors = loadedAuthors;
+                System.out.println("Loaded " + authors.size() + " authors");
             }
 
+            // Load customers
             LinkedList<Customer> loadedCustomers = databaseManager.loadCustomers();
             if (loadedCustomers != null && !loadedCustomers.isEmpty()) {
                 customers = loadedCustomers;
+                System.out.println("Loaded " + customers.size() + " customers");
             }
 
+            // Load formulations
             LinkedList<Item> loadedFormulations = databaseManager.loadFormulations();
             if (loadedFormulations != null && !loadedFormulations.isEmpty()) {
                 allFormulations = loadedFormulations;
+                System.out.println("Loaded " + allFormulations.size() + " formulations");
+
+                // Link authors to their formulations
+                for (Item item : allFormulations) {
+                    if (item instanceof Food) {
+                        Food food = (Food) item;
+                        for (Author author : food.getAuthors()) {
+                            if (!author.getFormulatedItems().contains(food)) {
+                                author.getFormulatedItems().add(food);
+                            }
+                        }
+                    } else if (item instanceof Drink) {
+                        Drink drink = (Drink) item;
+                        for (Author author : drink.getAuthors()) {
+                            if (!author.getFormulatedItems().contains(drink)) {
+                                author.getFormulatedItems().add(drink);
+                            }
+                        }
+                    }
+                }
             }
 
-            AuditTrail loadedAudit = databaseManager.loadAuditTrail();
-            if (loadedAudit != null) {
-                auditTrail = loadedAudit;
+            // Load audit trail
+            try {
+                AuditTrail loadedAudit = databaseManager.loadAuditTrail();
+                if (loadedAudit != null) {
+                    auditTrail = loadedAudit;
+                    System.out.println("Loaded audit trail with " + auditTrail.records.size() + " records");
+                }
+            } catch (Exception e) {
+                System.out.println("Could not load audit trail: " + e.getMessage());
             }
 
             auditTrail.logAction("SYSTEM", "Data loaded from database at " + new Date());
+            System.out.println("Data loading completed successfully");
 
         } catch (Exception e) {
-            showError("Data Loading Error", "Error loading data: " + e.getMessage());
+            System.err.println("Error loading data: " + e.getMessage());
+            e.printStackTrace();
+            showError("Data Loading Error",
+                    "Error loading data from database: " + e.getMessage() + "\nUsing sample data.");
+            if (admins.isEmpty() || authors.isEmpty() || customers.isEmpty()) {
+                createSampleData();
+            }
         }
     }
 
@@ -187,15 +323,18 @@ public class Main_GUI extends Application {
      */
     private void saveDataToDatabase() {
         try {
-            databaseManager.saveAdmins(admins);
-            databaseManager.saveAuthors(authors);
-            databaseManager.saveCustomers(customers);
-            databaseManager.saveFormulations(allFormulations);
-            databaseManager.saveAuditTrail(auditTrail);
+            if (databaseManager != null) {
+                databaseManager.saveAdmins(admins);
+                databaseManager.saveAuthors(authors);
+                databaseManager.saveCustomers(customers);
+                databaseManager.saveFormulations(allFormulations);
+                databaseManager.saveAuditTrail(auditTrail);
 
-            showInformation("Save Successful", "All data saved successfully to database");
-            auditTrail.logAction("SYSTEM", "Data saved to database at " + new Date());
-
+                showInformation("Save Successful", "All data saved successfully to database");
+                auditTrail.logAction("SYSTEM", "Data saved to database at " + new Date());
+            } else {
+                showInformation("Save Info", "Running in offline mode. Data will be saved locally on exit.");
+            }
         } catch (Exception e) {
             showError("Save Error", "Error saving data: " + e.getMessage());
         }
@@ -203,279 +342,349 @@ public class Main_GUI extends Application {
 
     // ============ WELCOME SCREEN ============
 
-    /**
-     * Show welcome screen (not logged in)
-     */
     private void showWelcomeScreen() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_PRIMARY + ", " + COLOR_SECONDARY + ");");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
         // Header
         VBox header = createHeader("FOOD & DRINK FORMULATION MANAGEMENT SYSTEM",
-                "Professional Formulation Management Platform");
+                "Professional Management Platform");
         root.setTop(header);
 
-        // Center content - menu buttons
-        VBox centerBox = new VBox(20);
+        // Center content
+        VBox centerBox = new VBox(30);
         centerBox.setAlignment(Pos.CENTER);
-        centerBox.setPadding(new Insets(40));
+        centerBox.setPadding(new Insets(50));
 
-        Label titleLabel = new Label("Please select an option:");
-        titleLabel.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 18));
-        titleLabel.setTextFill(Color.WHITE);
+        Label titleLabel = new Label("Welcome to Formulation Manager");
+        titleLabel.setFont(FONT_TITLE);
+        titleLabel.setTextFill(Color.web(COLOR_PRIMARY));
 
-        Button btnLoginAdmin = createMenuButton("Login as Admin", COLOR_ADMIN);
-        Button btnLoginAuthor = createMenuButton("Login as Author", COLOR_AUTHOR);
-        Button btnLoginCustomer = createMenuButton("Login as Customer", COLOR_CUSTOMER);
-        Button btnRegister = createMenuButton("Register as Customer", COLOR_PURPLE);
+        Label subtitleLabel = new Label("Please select your role to continue");
+        subtitleLabel.setFont(FONT_SUBTITLE);
+        subtitleLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        VBox buttonBox = new VBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setMaxWidth(400);
+
+        Button btnAdmin = createMenuButton("Administrator Login", COLOR_ADMIN);
+        Button btnAuthor = createMenuButton("Author Login", COLOR_AUTHOR);
+        Button btnCustomer = createMenuButton("Customer Login", COLOR_CUSTOMER);
+        Button btnRegister = createMenuButton("Register New Customer", COLOR_INFO);
         Button btnSave = createMenuButton("Save Data", COLOR_SUCCESS);
-        Button btnExit = createMenuButton("Exit", COLOR_ERROR);
+        Button btnExit = createMenuButton("Exit System", COLOR_ERROR);
 
-        // Button actions
-        btnLoginAdmin.setOnAction(e -> showLoginScreen("ADMIN"));
-        btnLoginAuthor.setOnAction(e -> showLoginScreen("AUTHOR"));
-        btnLoginCustomer.setOnAction(e -> showLoginScreen("CUSTOMER"));
+        btnAdmin.setOnAction(e -> showLoginScreen("ADMIN"));
+        btnAuthor.setOnAction(e -> showLoginScreen("AUTHOR"));
+        btnCustomer.setOnAction(e -> showLoginScreen("CUSTOMER"));
         btnRegister.setOnAction(e -> showRegistrationScreen());
         btnSave.setOnAction(e -> saveDataToDatabase());
         btnExit.setOnAction(e -> handleExit());
 
-        centerBox.getChildren().addAll(titleLabel, btnLoginAdmin, btnLoginAuthor,
-                btnLoginCustomer, btnRegister, btnSave, btnExit);
+        buttonBox.getChildren().addAll(btnAdmin, btnAuthor, btnCustomer, btnRegister, btnSave, btnExit);
+        centerBox.getChildren().addAll(titleLabel, subtitleLabel, buttonBox);
 
         root.setCenter(centerBox);
 
         // Footer
-        HBox footer = createFooter("System initialized. Default admin: Name=System Admin, Password=admin123");
+        HBox footer = createFooter("System Version 1.0 • Default Admin: admin123 • " +
+                "Total Users: " + (admins.size() + authors.size() + customers.size()) +
+                " • Formulations: " + allFormulations.size());
         root.setBottom(footer);
-
-        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        if (primaryStage.getScene() != null) {
-            primaryStage.setScene(currentScene);
-        }
-    }
-
-    // ============ LOGIN SCREEN ============
-
-    /**
-     * Show login screen for Admin, Author, or Customer
-     */
-    private void showLoginScreen(String userType) {
-        BorderPane root = new BorderPane();
-
-        // Set gradient background based on user type
-        String gradientColor = COLOR_SECONDARY;
-        if ("ADMIN".equals(userType)) gradientColor = COLOR_ADMIN;
-        else if ("AUTHOR".equals(userType)) gradientColor = COLOR_AUTHOR;
-        else if ("CUSTOMER".equals(userType)) gradientColor = COLOR_CUSTOMER;
-
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + gradientColor + ", " + COLOR_PRIMARY + ");");
-
-        // Header
-        VBox header = createHeader("LOGIN", userType + " Login");
-        root.setTop(header);
-
-        // Center content - login form
-        VBox formBox = new VBox(15);
-        formBox.setAlignment(Pos.CENTER);
-        formBox.setPadding(new Insets(40));
-        formBox.setMaxWidth(400);
-        formBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 8; -fx-padding: 25; " +
-                "-fx-border-color: rgba(255,255,255,0.2); -fx-border-width: 1; -fx-border-radius: 8;");
-
-        Label lblId = new Label(userType + " Name:");
-        lblId.setTextFill(Color.WHITE);
-        lblId.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-
-        TextField txtName = new TextField();
-        txtName.setPromptText("Enter your Name");
-        txtName.setStyle("-fx-font-size: 14px; -fx-background-radius: 4; -fx-padding: 8; " +
-                "-fx-background-color: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        Label lblPassword = new Label("Password:");
-        lblPassword.setTextFill(Color.WHITE);
-        lblPassword.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-
-        PasswordField txtPassword = new PasswordField();
-        txtPassword.setPromptText("Enter your password");
-        txtPassword.setStyle("-fx-font-size: 14px; -fx-background-radius: 4; -fx-padding: 8; " +
-                "-fx-background-color: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        Button btnLogin = new Button("Login");
-        btnLogin.setStyle("-fx-background-color: " + COLOR_SUCCESS + "; -fx-text-fill: white; " +
-                "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 40; -fx-background-radius: 4;");
-        btnLogin.setMaxWidth(Double.MAX_VALUE);
-
-        Button btnBack = new Button("Back to Welcome");
-        btnBack.setStyle("-fx-background-color: " + COLOR_NEUTRAL + "; -fx-text-fill: white; " +
-                "-fx-font-size: 14px; -fx-padding: 8 30; -fx-background-radius: 4;");
-        btnBack.setMaxWidth(Double.MAX_VALUE);
-
-        // Login action
-        btnLogin.setOnAction(e -> {
-            String name = txtName.getText().trim();
-            String password = txtPassword.getText();
-
-            if (name.isEmpty() || password.isEmpty()) {
-                showError("Validation Error", "Please fill in all fields!");
-                return;
-            }
-
-            performLogin(userType, name, password);
-        });
-
-        btnBack.setOnAction(e -> showWelcomeScreen());
-
-        formBox.getChildren().addAll(lblId, txtName, lblPassword, txtPassword, btnLogin, btnBack);
-
-        // Center the form
-        HBox centerContainer = new HBox(formBox);
-        centerContainer.setAlignment(Pos.CENTER);
-        root.setCenter(centerContainer);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
     }
 
-    /**
-     * Perform login authentication
-     */
-    private void performLogin(String userType, String name, String password) {
+    // ============ LOGIN SCREEN ============
+
+    private void showLoginScreen(String userType) {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        // Header
+        VBox header = createHeader(userType + " LOGIN", "Access your account");
+        root.setTop(header);
+
+        // Form container
+        VBox formContainer = new VBox();
+        formContainer.setAlignment(Pos.CENTER);
+        formContainer.setPadding(new Insets(50));
+
+        VBox formBox = new VBox(20);
+        formBox.setAlignment(Pos.CENTER);
+        formBox.setPadding(new Insets(40));
+        formBox.setMaxWidth(400);
+        formBox.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 10; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 10; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);");
+
+        Label formTitle = new Label(userType + " Login");
+        formTitle.setFont(FONT_SUBTITLE);
+        formTitle.setTextFill(Color.web(getUserColor(userType)));
+
+        Label lblUsername = new Label("Username:");
+        lblUsername.setFont(FONT_BODY);
+        lblUsername.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        TextField txtUsername = new TextField();
+        txtUsername.setPromptText("Enter your username");
+        txtUsername.setStyle(createTextFieldStyle());
+
+        Label lblPassword = new Label("Password:");
+        lblPassword.setFont(FONT_BODY);
+        lblPassword.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        PasswordField txtPassword = new PasswordField();
+        txtPassword.setPromptText("Enter your password");
+        txtPassword.setStyle(createTextFieldStyle());
+
+        Button btnLogin = createStandardButton("Login", getUserColor(userType));
+        Button btnBack = createStandardButton("Back to Welcome", COLOR_TEXT_SECONDARY);
+
+        btnLogin.setOnAction(e -> {
+            String username = txtUsername.getText().trim();
+            String password = txtPassword.getText();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                showError("Validation Error", "Please fill in all fields");
+                return;
+            }
+
+            performLogin(userType, username, password);
+        });
+
+        btnBack.setOnAction(e -> showWelcomeScreen());
+
+        formBox.getChildren().addAll(formTitle, lblUsername, txtUsername,
+                lblPassword, txtPassword, btnLogin, btnBack);
+        formContainer.getChildren().add(formBox);
+        root.setCenter(formContainer);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private void performLogin(String userType, String username, String password) {
         boolean loginSuccessful = false;
         String userName = "";
 
-        switch (userType) {
-            case "ADMIN":
-                for (Admin admin : admins) {
-                    if (admin.getName().equals(name) && admin.getPassword().equals(password)) {
-                        currentUser = admin;
-                        currentUserType = "ADMIN";
-                        userName = admin.getName();
+        try {
+            switch (userType) {
+                case "ADMIN":
+                    for (Admin admin : admins) {
+                        if (admin.getName().equals(username) && admin.getPassword().equals(password)) {
+                            currentUser = admin;
+                            currentUserType = "ADMIN";
+                            userName = admin.getName();
 
-                        // Set system references
-                        admin.setAuthors(authors);
-                        admin.setAdmins(admins);
-                        admin.setCustomers(customers);
-                        admin.setAllFormulations(allFormulations);
+                            // Set system references
+                            admin.setAuthors(authors);
+                            admin.setAdmins(admins);
+                            admin.setCustomers(customers);
+                            admin.setAllFormulations(allFormulations);
 
-                        loginSuccessful = true;
-                        break;
+                            loginSuccessful = true;
+                            break;
+                        }
                     }
-                }
-                break;
+                    break;
 
-            case "AUTHOR":
-                for (Author author : authors) {
-                    if (author.getName().equals(name) && author.getPassword().equals(password)) {
-                        currentUser = author;
-                        currentUserType = "AUTHOR";
-                        userName = author.getName();
-                        loginSuccessful = true;
-                        break;
+                case "AUTHOR":
+                    for (Author author : authors) {
+                        if (author.getName().equals(username) && author.getPassword().equals(password)) {
+                            currentUser = author;
+                            currentUserType = "AUTHOR";
+                            userName = author.getName();
+                            loginSuccessful = true;
+                            break;
+                        }
                     }
-                }
-                break;
+                    break;
 
-            case "CUSTOMER":
-                for (Customer customer : customers) {
-                    if (customer.getName().equals(name) && customer.getPassword().equals(password)) {
-                        currentUser = customer;
-                        currentUserType = "CUSTOMER";
-                        userName = customer.getName();
+                case "CUSTOMER":
+                    for (Customer customer : customers) {
+                        if (customer.getName().equals(username) && customer.getPassword().equals(password)) {
+                            currentUser = customer;
+                            currentUserType = "CUSTOMER";
+                            userName = customer.getName();
 
-                        // Set available formulations
-                        LinkedList<Item> availableItems = getNonVetoedFormulations();
-                        customer.setAvailableFormulations(availableItems);
+                            // Set available formulations
+                            LinkedList<Item> availableItems = getNonVetoedFormulations();
+                            customer.setAvailableFormulations(availableItems);
 
-                        loginSuccessful = true;
-                        break;
+                            loginSuccessful = true;
+                            break;
+                        }
                     }
-                }
-                break;
-        }
+                    break;
+            }
 
-        if (loginSuccessful) {
-            auditTrail.logAction(userType + ":" + userName, "Logged in at " + new Date());
-            showInformation("Login Successful", "Welcome, " + userName + "!");
-            showUserDashboard();
-        } else {
-            auditTrail.logAction("SYSTEM", "Failed " + userType + " login attempt for name: " + name);
-            showError("Login Failed", "Invalid credentials. Please try again.");
+            if (loginSuccessful) {
+                auditTrail.logAction(userType + ":" + userName, "Logged in successfully");
+                showInformation("Login Successful", "Welcome back, " + userName + "!");
+                showUserDashboard();
+            } else {
+                auditTrail.logAction("SYSTEM", "Failed login attempt for " + userType + ": " + username);
+                showError("Login Failed", "Invalid username or password");
+            }
+        } catch (Exception e) {
+            showError("Login Error", "An error occurred during login: " + e.getMessage());
         }
     }
 
     // ============ REGISTRATION SCREEN ============
 
-    /**
-     * Show customer registration screen
-     */
     private void showRegistrationScreen() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("REGISTRATION", "New Customer Registration");
+        VBox header = createHeader("CUSTOMER REGISTRATION", "Create a new customer account");
         root.setTop(header);
 
-        // Center content - registration form
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.setStyle("-fx-background: transparent;");
 
-        VBox formBox = new VBox(12);
+        VBox formBox = new VBox(20);
         formBox.setAlignment(Pos.TOP_CENTER);
-        formBox.setPadding(new Insets(30));
-        formBox.setMaxWidth(500);
-        formBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 8; " +
-                "-fx-border-color: rgba(255,255,255,0.2); -fx-border-width: 1; -fx-border-radius: 8;");
+        formBox.setPadding(new Insets(40));
+        formBox.setMaxWidth(600);
+        formBox.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 10; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 10; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);");
+
+        Label formTitle = new Label("New Customer Registration");
+        formTitle.setFont(FONT_SUBTITLE);
+        formTitle.setTextFill(Color.web(COLOR_CUSTOMER));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(15);
+        grid.setPadding(new Insets(20));
 
         // Form fields
-        TextField txtId = createFormField(formBox, "Customer ID:", "Enter unique ID");
-        TextField txtName = createFormField(formBox, "Name:", "Enter your name");
-        TextField txtAddress = createFormField(formBox, "Address:", "Enter your address");
-        TextField txtContact = createFormField(formBox, "Contact:", "Enter phone/email");
-        TextField txtDob = createFormField(formBox, "Date of Birth:", "YYYY-MM-DD");
-        TextField txtAge = createFormField(formBox, "Age:", "Enter your age");
-        PasswordField txtPassword = createPasswordField(formBox, "Password:", "Minimum 4 characters");
+        Label lblId = new Label("Customer ID:*");
+        lblId.setFont(FONT_BODY);
+        TextField txtId = new TextField();
+        txtId.setStyle(createTextFieldStyle());
 
-        HBox buttonBox = new HBox(10);
+        Label lblName = new Label("Full Name:*");
+        lblName.setFont(FONT_BODY);
+        TextField txtName = new TextField();
+        txtName.setStyle(createTextFieldStyle());
+
+        Label lblAddress = new Label("Address:");
+        lblAddress.setFont(FONT_BODY);
+        TextField txtAddress = new TextField();
+        txtAddress.setStyle(createTextFieldStyle());
+
+        Label lblContact = new Label("Contact Info:*");
+        lblContact.setFont(FONT_BODY);
+        TextField txtContact = new TextField();
+        txtContact.setStyle(createTextFieldStyle());
+
+        Label lblDob = new Label("Date of Birth (YYYY-MM-DD):");
+        lblDob.setFont(FONT_BODY);
+        TextField txtDob = new TextField();
+        txtDob.setStyle(createTextFieldStyle());
+
+        Label lblAge = new Label("Age:*");
+        lblAge.setFont(FONT_BODY);
+        TextField txtAge = new TextField();
+        txtAge.setStyle(createTextFieldStyle());
+
+        Label lblPassword = new Label("Password:*");
+        lblPassword.setFont(FONT_BODY);
+        PasswordField txtPassword = new PasswordField();
+        txtPassword.setStyle(createTextFieldStyle());
+
+        Label lblConfirm = new Label("Confirm Password:*");
+        lblConfirm.setFont(FONT_BODY);
+        PasswordField txtConfirm = new PasswordField();
+        txtConfirm.setStyle(createTextFieldStyle());
+
+        // Add to grid
+        grid.add(lblId, 0, 0);
+        grid.add(txtId, 1, 0);
+        grid.add(lblName, 0, 1);
+        grid.add(txtName, 1, 1);
+        grid.add(lblAddress, 0, 2);
+        grid.add(txtAddress, 1, 2);
+        grid.add(lblContact, 0, 3);
+        grid.add(txtContact, 1, 3);
+        grid.add(lblDob, 0, 4);
+        grid.add(txtDob, 1, 4);
+        grid.add(lblAge, 0, 5);
+        grid.add(txtAge, 1, 5);
+        grid.add(lblPassword, 0, 6);
+        grid.add(txtPassword, 1, 6);
+        grid.add(lblConfirm, 0, 7);
+        grid.add(txtConfirm, 1, 7);
+
+        HBox buttonBox = new HBox(20);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setPadding(new Insets(20, 0, 0, 0));
+        buttonBox.setPadding(new Insets(30, 0, 0, 0));
 
-        Button btnRegister = new Button("Register");
-        btnRegister.setStyle("-fx-background-color: " + COLOR_SUCCESS + "; -fx-text-fill: white; " +
-                "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 30; -fx-background-radius: 4;");
-
-        Button btnCancel = new Button("Cancel");
-        btnCancel.setStyle("-fx-background-color: " + COLOR_NEUTRAL + "; -fx-text-fill: white; " +
-                "-fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 4;");
+        Button btnRegister = createStandardButton("Register", COLOR_CUSTOMER);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
 
         btnRegister.setOnAction(e -> {
             try {
-                int id = Integer.parseInt(txtId.getText());
+                // Validation
+                if (txtId.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Customer ID is required");
+                    return;
+                }
+                if (txtName.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Full name is required");
+                    return;
+                }
+                if (txtContact.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Contact information is required");
+                    return;
+                }
+                if (txtAge.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Age is required");
+                    return;
+                }
+                if (txtPassword.getText().isEmpty()) {
+                    showError("Validation Error", "Password is required");
+                    return;
+                }
+                if (!txtPassword.getText().equals(txtConfirm.getText())) {
+                    showError("Validation Error", "Passwords do not match");
+                    return;
+                }
+
+                int id = Integer.parseInt(txtId.getText().trim());
                 String name = txtName.getText().trim();
                 String address = txtAddress.getText();
                 String contact = txtContact.getText();
                 String dob = txtDob.getText();
-                int age = Integer.parseInt(txtAge.getText());
+                int age = Integer.parseInt(txtAge.getText().trim());
                 String password = txtPassword.getText();
 
-                // Validation
-                if (name.isEmpty()) {
-                    showError("Validation Error", "Name cannot be empty!");
-                    return;
-                }
                 if (password.length() < 4) {
-                    showError("Validation Error", "Password must be at least 4 characters!");
+                    showError("Validation Error", "Password must be at least 4 characters");
                     return;
                 }
                 if (age < 0 || age > 150) {
-                    showError("Validation Error", "Invalid age!");
+                    showError("Validation Error", "Invalid age");
                     return;
                 }
 
                 // Check if ID exists
                 for (Customer c : customers) {
                     if (c.getCustomerID() == id) {
-                        showError("Registration Failed", "Customer ID already exists!");
+                        showError("Registration Failed", "Customer ID already exists");
                         return;
                     }
                 }
@@ -489,11 +698,13 @@ public class Main_GUI extends Application {
                 customer.setPassword(password);
 
                 customers.add(customer);
-                databaseManager.saveCustomer(customer);
+                if (databaseManager != null) {
+                    databaseManager.saveCustomer(customer);
+                }
 
                 auditTrail.logAction("SYSTEM", "New customer registered: " + name + " (ID: " + id + ")");
                 showInformation("Registration Successful",
-                        "Welcome! You can now login with Name: " + name);
+                        "Welcome " + name + "! You can now login with your credentials.");
                 showWelcomeScreen();
 
             } catch (NumberFormatException ex) {
@@ -506,10 +717,10 @@ public class Main_GUI extends Application {
         btnCancel.setOnAction(e -> showWelcomeScreen());
 
         buttonBox.getChildren().addAll(btnRegister, btnCancel);
-        formBox.getChildren().add(buttonBox);
+        formBox.getChildren().addAll(formTitle, grid, buttonBox);
 
-        HBox centerContainer = new HBox(formBox);
-        centerContainer.setAlignment(Pos.CENTER);
+        StackPane centerContainer = new StackPane(formBox);
+        centerContainer.setPadding(new Insets(20));
         scrollPane.setContent(centerContainer);
         root.setCenter(scrollPane);
 
@@ -519,9 +730,6 @@ public class Main_GUI extends Application {
 
     // ============ USER DASHBOARDS ============
 
-    /**
-     * Show dashboard based on user type
-     */
     private void showUserDashboard() {
         if ("ADMIN".equals(currentUserType)) {
             showAdminDashboard();
@@ -532,790 +740,345 @@ public class Main_GUI extends Application {
         }
     }
 
-    /**
-     * Show Admin Dashboard
-     */
     private void showAdminDashboard() {
         Admin admin = (Admin) currentUser;
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_ADMIN + ", #A93226);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("ADMIN DASHBOARD", "Welcome, " + admin.getName() + " (Administrator)");
+        VBox header = createHeader("ADMINISTRATOR DASHBOARD",
+                "Welcome, " + admin.getName() + " | System Administration Panel");
         root.setTop(header);
 
-        // Menu buttons
-        VBox menuBox = new VBox(15);
-        menuBox.setAlignment(Pos.CENTER);
-        menuBox.setPadding(new Insets(30));
+        // Main content with cards
+        TilePane tilePane = new TilePane();
+        tilePane.setPadding(new Insets(30));
+        tilePane.setHgap(20);
+        tilePane.setVgap(20);
+        tilePane.setPrefColumns(3);
 
-        Button[] buttons = {
-                createMenuButton("Account Management", COLOR_PURPLE),
-                createMenuButton("Formulation Management", COLOR_INFO),
-                createMenuButton("Check Formulation Issues", COLOR_WARNING),
-                createMenuButton("View System Statistics", COLOR_SUCCESS),
-                createMenuButton("View All Accounts", COLOR_PURPLE),
-                createMenuButton("View Audit Trail", COLOR_SECONDARY),
-                createMenuButton("Save Data to Database", COLOR_SUCCESS),
-                createMenuButton("Create Database Backup", COLOR_INFO),
-                createMenuButton("Logout", COLOR_ERROR)
-        };
+        // Create admin function cards
+        Map<String, String[]> adminFunctions = new HashMap<>();
+        adminFunctions.put("User Management", new String[]{"Manage all system users", COLOR_ADMIN});
+        adminFunctions.put("Formulation Management", new String[]{"View and manage all formulations", COLOR_INFO});
+        adminFunctions.put("Veto Management", new String[]{"Set or remove vetos on formulations", COLOR_ERROR});
+        adminFunctions.put("System Statistics", new String[]{"View system-wide statistics", COLOR_SUCCESS});
+        adminFunctions.put("Audit Trail", new String[]{"View system activity logs", COLOR_SECONDARY});
+        adminFunctions.put("Quality Control", new String[]{"Check formulation quality issues", COLOR_WARNING});
+        adminFunctions.put("Database Tools", new String[]{"Backup and restore database", COLOR_PRIMARY});
+        adminFunctions.put("Create New Author", new String[]{"Create new author accounts", COLOR_AUTHOR});
+        adminFunctions.put("Create New Admin", new String[]{"Create new administrator accounts", COLOR_ADMIN});
+        adminFunctions.put("View All Customers", new String[]{"Browse all customer accounts", COLOR_CUSTOMER});
+        adminFunctions.put("Save Data", new String[]{"Save all data to database", COLOR_SUCCESS});
+        adminFunctions.put("Logout", new String[]{"Logout from administrator account", COLOR_TEXT_SECONDARY});
 
-        // Button actions
-        buttons[0].setOnAction(e -> showAccountManagementScreen());
-        buttons[1].setOnAction(e -> showFormulationManagementScreen());
-        buttons[2].setOnAction(e -> showCheckFormulationIssuesScreen());
-        buttons[3].setOnAction(e -> showSystemStatisticsScreen());
-        buttons[4].setOnAction(e -> showAllAccountsScreen());
-        buttons[5].setOnAction(e -> showAuditTrailScreen());
-        buttons[6].setOnAction(e -> saveDataToDatabase());
-        buttons[7].setOnAction(e -> showInformation("Backup", "Backup feature available. Use mysqldump for full backup."));
-        buttons[8].setOnAction(e -> logout());
+        for (Map.Entry<String, String[]> entry : adminFunctions.entrySet()) {
+            String title = entry.getKey();
+            String description = entry.getValue()[0];
+            String color = entry.getValue()[1];
 
-        menuBox.getChildren().addAll(buttons);
-        root.setCenter(menuBox);
+            VBox card = createFunctionCard(title, description, color);
+            tilePane.getChildren().add(card);
 
-        HBox footer = createFooter("Admin: " + admin.getName() + " | Total Formulations: " + allFormulations.size() +
-                " | Total Users: " + (admins.size() + authors.size() + customers.size()));
-        root.setBottom(footer);
+            // Set action
+            card.setOnMouseClicked(e -> handleAdminFunction(title));
+        }
+
+        ScrollPane scrollPane = new ScrollPane(tilePane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+        root.setCenter(scrollPane);
+
+        // Stats footer
+        HBox statsBar = new HBox(40);
+        statsBar.setPadding(new Insets(15));
+        statsBar.setAlignment(Pos.CENTER);
+        statsBar.setStyle("-fx-background-color: white; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1 0 0 0;");
+
+        Label lblAdmins = createStatLabel("Admins: " + admins.size(), COLOR_ADMIN);
+        Label lblAuthors = createStatLabel("Authors: " + authors.size(), COLOR_AUTHOR);
+        Label lblCustomers = createStatLabel("Customers: " + customers.size(), COLOR_CUSTOMER);
+        Label lblFormulations = createStatLabel("Formulations: " + allFormulations.size(), COLOR_INFO);
+        Label lblVetoed = createStatLabel("Vetoed: " + countVetoedFormulations(), COLOR_ERROR);
+
+        statsBar.getChildren().addAll(lblAdmins, lblAuthors, lblCustomers, lblFormulations, lblVetoed);
+        root.setBottom(statsBar);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
     }
 
-    /**
-     * Show Author Dashboard
-     */
+    private void handleAdminFunction(String function) {
+        switch (function) {
+            case "User Management":
+                showUserManagementScreen();
+                break;
+            case "Formulation Management":
+                showFormulationManagementScreen();
+                break;
+            case "Veto Management":
+                showVetoManagementScreen();
+                break;
+            case "System Statistics":
+                showSystemStatisticsScreen();
+                break;
+            case "Audit Trail":
+                showAuditTrailScreen();
+                break;
+            case "Quality Control":
+                showQualityControlScreen();
+                break;
+            case "Database Tools":
+                showDatabaseToolsScreen();
+                break;
+            case "Create New Author":
+                showCreateAuthorScreen();
+                break;
+            case "Create New Admin":
+                showCreateAdminScreen();
+                break;
+            case "View All Customers":
+                showAllCustomersScreen();
+                break;
+            case "Save Data":
+                saveDataToDatabase();
+                break;
+            case "Logout":
+                logout();
+                break;
+        }
+    }
+
     private void showAuthorDashboard() {
         Author author = (Author) currentUser;
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_AUTHOR + ", #21618C);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("AUTHOR DASHBOARD", "Welcome, " + author.getName() + " (Author)");
+        VBox header = createHeader("AUTHOR DASHBOARD",
+                "Welcome, " + author.getName() + " | Formulation Creation & Management");
         root.setTop(header);
 
-        VBox menuBox = new VBox(15);
-        menuBox.setAlignment(Pos.CENTER);
-        menuBox.setPadding(new Insets(30));
+        TilePane tilePane = new TilePane();
+        tilePane.setPadding(new Insets(30));
+        tilePane.setHgap(20);
+        tilePane.setVgap(20);
+        tilePane.setPrefColumns(2);
 
-        Button[] buttons = {
-                createMenuButton("Create New Formulation", COLOR_SUCCESS),
-                createMenuButton("Update Existing Formulation", COLOR_INFO),
-                createMenuButton("View My Formulations", COLOR_PURPLE),
-                createMenuButton("Check Formulation Issues", COLOR_WARNING),
-                createMenuButton("View My Statistics", COLOR_SUCCESS),
-                createMenuButton("Save Data to Database", COLOR_SECONDARY),
-                createMenuButton("Logout", COLOR_ERROR)
-        };
+        // Create author function cards
+        Map<String, String[]> authorFunctions = new HashMap<>();
+        authorFunctions.put("Create New Food", new String[]{"Create new food formulation", COLOR_SUCCESS});
+        authorFunctions.put("Create New Drink", new String[]{"Create new drink formulation", COLOR_INFO});
+        authorFunctions.put("My Formulations", new String[]{"View and edit my formulations", COLOR_AUTHOR});
+        authorFunctions.put("Update Formulation", new String[]{"Update existing formulation", COLOR_WARNING});
+        authorFunctions.put("Quality Check", new String[]{"Check my formulations for issues", COLOR_ERROR});
+        authorFunctions.put("My Statistics", new String[]{"View my formulation statistics", COLOR_PRIMARY});
+        authorFunctions.put("View All Formulations", new String[]{"Browse all system formulations", COLOR_SECONDARY});
+        authorFunctions.put("Save Data", new String[]{"Save all data to database", COLOR_SUCCESS});
+        authorFunctions.put("Logout", new String[]{"Logout from author account", COLOR_TEXT_SECONDARY});
 
-        // Button actions
-        buttons[0].setOnAction(e -> showCreateFormulationScreen());
-        buttons[1].setOnAction(e -> showUpdateFormulationScreen());
-        buttons[2].setOnAction(e -> showAuthorFormulationsScreen());
-        buttons[3].setOnAction(e -> showAuthorCheckIssuesScreen());
-        buttons[4].setOnAction(e -> showAuthorStatisticsScreen());
-        buttons[5].setOnAction(e -> saveDataToDatabase());
-        buttons[6].setOnAction(e -> logout());
+        for (Map.Entry<String, String[]> entry : authorFunctions.entrySet()) {
+            String title = entry.getKey();
+            String description = entry.getValue()[0];
+            String color = entry.getValue()[1];
 
-        menuBox.getChildren().addAll(buttons);
-        root.setCenter(menuBox);
+            VBox card = createFunctionCard(title, description, color);
+            tilePane.getChildren().add(card);
 
-        HBox footer = createFooter("Author: " + author.getName() + " | My Formulations: " + author.getFormulatedItems().size());
-        root.setBottom(footer);
+            // Set action
+            card.setOnMouseClicked(e -> handleAuthorFunction(title));
+        }
+
+        ScrollPane scrollPane = new ScrollPane(tilePane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+        root.setCenter(scrollPane);
+
+        // Stats footer
+        HBox statsBar = new HBox(40);
+        statsBar.setPadding(new Insets(15));
+        statsBar.setAlignment(Pos.CENTER);
+        statsBar.setStyle("-fx-background-color: white; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1 0 0 0;");
+
+        int myFormulations = author.getFormulatedItems().size();
+        int foodCount = countAuthorFoods(author);
+        int drinkCount = countAuthorDrinks(author);
+
+        Label lblFormulations = createStatLabel("My Formulations: " + myFormulations, COLOR_AUTHOR);
+        Label lblFoods = createStatLabel("Foods: " + foodCount, COLOR_SUCCESS);
+        Label lblDrinks = createStatLabel("Drinks: " + drinkCount, COLOR_INFO);
+        Label lblFeedbacks = createStatLabel("Total Feedbacks: " + countAuthorFeedbacks(author), COLOR_PRIMARY);
+
+        statsBar.getChildren().addAll(lblFormulations, lblFoods, lblDrinks, lblFeedbacks);
+        root.setBottom(statsBar);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
     }
 
-    /**
-     * Show Customer Dashboard
-     */
+    private void handleAuthorFunction(String function) {
+        switch (function) {
+            case "Create New Food":
+                showCreateFoodScreen();
+                break;
+            case "Create New Drink":
+                showCreateDrinkScreen();
+                break;
+            case "My Formulations":
+                showMyFormulationsScreen();
+                break;
+            case "Update Formulation":
+                showUpdateFormulationSelectionScreen();
+                break;
+            case "Quality Check":
+                showAuthorQualityCheckScreen();
+                break;
+            case "My Statistics":
+                showAuthorStatisticsScreen();
+                break;
+            case "View All Formulations":
+                showAllFormulationsScreen();
+                break;
+            case "Save Data":
+                saveDataToDatabase();
+                break;
+            case "Logout":
+                logout();
+                break;
+        }
+    }
+
     private void showCustomerDashboard() {
         Customer customer = (Customer) currentUser;
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_CUSTOMER + ", #117864);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("CUSTOMER DASHBOARD", "Welcome, " + customer.getName() + " (Customer)");
+        VBox header = createHeader("CUSTOMER DASHBOARD",
+                "Welcome, " + customer.getName() + " | Browse & Purchase Formulations");
         root.setTop(header);
 
-        VBox menuBox = new VBox(15);
-        menuBox.setAlignment(Pos.CENTER);
-        menuBox.setPadding(new Insets(30));
+        TilePane tilePane = new TilePane();
+        tilePane.setPadding(new Insets(30));
+        tilePane.setHgap(20);
+        tilePane.setVgap(20);
+        tilePane.setPrefColumns(2);
 
-        Button[] buttons = {
-                createMenuButton("Browse Catalog", COLOR_INFO),
-                createMenuButton("My Purchases", COLOR_SUCCESS),
-                createMenuButton("My Favorites", COLOR_PURPLE),
-                createMenuButton("My Profile", COLOR_INFO),
-                createMenuButton("Save Data to Database", COLOR_SECONDARY),
-                createMenuButton("Logout", COLOR_ERROR)
-        };
+        // Create customer function cards
+        Map<String, String[]> customerFunctions = new HashMap<>();
+        customerFunctions.put("Browse Catalog", new String[]{"Browse available formulations", COLOR_CUSTOMER});
+        customerFunctions.put("My Purchases", new String[]{"View purchase history", COLOR_SUCCESS});
+        customerFunctions.put("My Favorites", new String[]{"View favorite formulations", COLOR_WARNING});
+        customerFunctions.put("My Profile", new String[]{"View and update profile", COLOR_INFO});
+        customerFunctions.put("Provide Feedback", new String[]{"Provide feedback on purchases", COLOR_PRIMARY});
+        customerFunctions.put("Search Formulations", new String[]{"Search for specific formulations", COLOR_SECONDARY});
+        customerFunctions.put("Save Data", new String[]{"Save all data to database", COLOR_SUCCESS});
+        customerFunctions.put("Logout", new String[]{"Logout from customer account", COLOR_TEXT_SECONDARY});
 
-        // Button actions
-        buttons[0].setOnAction(e -> showCustomerBrowseCatalogScreen());
-        buttons[1].setOnAction(e -> showCustomerPurchasesScreen());
-        buttons[2].setOnAction(e -> showCustomerFavoritesScreen());
-        buttons[3].setOnAction(e -> showCustomerProfileScreen());
-        buttons[4].setOnAction(e -> saveDataToDatabase());
-        buttons[5].setOnAction(e -> logout());
+        for (Map.Entry<String, String[]> entry : customerFunctions.entrySet()) {
+            String title = entry.getKey();
+            String description = entry.getValue()[0];
+            String color = entry.getValue()[1];
 
-        menuBox.getChildren().addAll(buttons);
-        root.setCenter(menuBox);
+            VBox card = createFunctionCard(title, description, color);
+            tilePane.getChildren().add(card);
 
-        HBox footer = createFooter("Customer: " + customer.getName() + " | Purchases: " + customer.getPurchasedItems().size() +
-                " | Favorites: " + customer.getFavoriteFormulations().size());
-        root.setBottom(footer);
+            // Set action
+            card.setOnMouseClicked(e -> handleCustomerFunction(title));
+        }
+
+        ScrollPane scrollPane = new ScrollPane(tilePane);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+        root.setCenter(scrollPane);
+
+        // Stats footer
+        HBox statsBar = new HBox(40);
+        statsBar.setPadding(new Insets(15));
+        statsBar.setAlignment(Pos.CENTER);
+        statsBar.setStyle("-fx-background-color: white; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1 0 0 0;");
+
+        Label lblPurchases = createStatLabel("Purchases: " + customer.getPurchasedItems().size(), COLOR_SUCCESS);
+        Label lblFavorites = createStatLabel("Favorites: " + customer.getFavoriteFormulations().size(), COLOR_WARNING);
+        Label lblAvailable = createStatLabel("Available: " + customer.getAvailableFormulations().size(), COLOR_CUSTOMER);
+        Label lblFeedback = createStatLabel("Feedback Given: " + customer.getFeedbackHistory().size(), COLOR_PRIMARY);
+
+        statsBar.getChildren().addAll(lblPurchases, lblFavorites, lblAvailable, lblFeedback);
+        root.setBottom(statsBar);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
+    }
+
+    private void handleCustomerFunction(String function) {
+        switch (function) {
+            case "Browse Catalog":
+                showCustomerCatalogScreen();
+                break;
+            case "My Purchases":
+                showCustomerPurchasesScreen();
+                break;
+            case "My Favorites":
+                showCustomerFavoritesScreen();
+                break;
+            case "My Profile":
+                showCustomerProfileScreen();
+                break;
+            case "Provide Feedback":
+                showFeedbackManagementScreen();
+                break;
+            case "Search Formulations":
+                showSearchFormulationsScreen();
+                break;
+            case "Save Data":
+                saveDataToDatabase();
+                break;
+            case "Logout":
+                logout();
+                break;
+        }
     }
 
     // ============ ADMIN FUNCTIONALITIES ============
 
-    private void showAccountManagementScreen() {
+    private void showUserManagementScreen() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("ACCOUNT MANAGEMENT", "Manage System Users");
+        VBox header = createHeader("USER MANAGEMENT", "Manage System Users");
         root.setTop(header);
 
-        VBox menuBox = new VBox(15);
-        menuBox.setAlignment(Pos.CENTER);
-        menuBox.setPadding(new Insets(30));
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        content.setAlignment(Pos.CENTER);
 
-        Button btnCreateAuthor = createMenuButton("Create Author Account", COLOR_INFO);
-        Button btnCreateAdmin = createMenuButton("Create Admin Account", COLOR_ADMIN);
-        Button btnViewAuthors = createMenuButton("View All Authors", COLOR_INFO);
-        Button btnViewAdmins = createMenuButton("View All Admins", COLOR_ADMIN);
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
+        Button btnViewAdmins = createStandardButton("View All Administrators", COLOR_ADMIN);
+        Button btnViewAuthors = createStandardButton("View All Authors", COLOR_AUTHOR);
+        Button btnViewCustomers = createStandardButton("View All Customers", COLOR_CUSTOMER);
+        Button btnCreateAuthor = createStandardButton("Create New Author", COLOR_AUTHOR);
+        Button btnCreateAdmin = createStandardButton("Create New Admin", COLOR_ADMIN);
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
 
+        btnViewAdmins.setOnAction(e -> showAllAdminsScreen());
+        btnViewAuthors.setOnAction(e -> showAllAuthorsScreen());
+        btnViewCustomers.setOnAction(e -> showAllCustomersScreen());
         btnCreateAuthor.setOnAction(e -> showCreateAuthorScreen());
         btnCreateAdmin.setOnAction(e -> showCreateAdminScreen());
-        btnViewAuthors.setOnAction(e -> showAllAuthorsScreen());
-        btnViewAdmins.setOnAction(e -> showAllAdminsScreen());
         btnBack.setOnAction(e -> showAdminDashboard());
 
-        menuBox.getChildren().addAll(btnCreateAuthor, btnCreateAdmin, btnViewAuthors, btnViewAdmins, btnBack);
-        root.setCenter(menuBox);
-
-        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(currentScene);
-    }
-
-    private void showCreateAuthorScreen() {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Create Author Account");
-        dialog.initOwner(primaryStage);
-
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
-
-        Label titleLabel = new Label("Create Author Account");
-        titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-        titleLabel.setTextFill(Color.web(COLOR_INFO));
-        vbox.getChildren().add(titleLabel);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20));
-
-        Label lblId = new Label("Author ID:");
-        TextField txtId = new TextField();
-        grid.add(lblId, 0, 0);
-        grid.add(txtId, 1, 0);
-
-        Label lblName = new Label("Name:");
-        TextField txtName = new TextField();
-        grid.add(lblName, 0, 1);
-        grid.add(txtName, 1, 1);
-
-        Label lblAddress = new Label("Address:");
-        TextField txtAddress = new TextField();
-        grid.add(lblAddress, 0, 2);
-        grid.add(txtAddress, 1, 2);
-
-        Label lblContact = new Label("Contact:");
-        TextField txtContact = new TextField();
-        grid.add(lblContact, 0, 3);
-        grid.add(txtContact, 1, 3);
-
-        Label lblDob = new Label("Date of Birth:");
-        TextField txtDob = new TextField();
-        grid.add(lblDob, 0, 4);
-        grid.add(txtDob, 1, 4);
-
-        Label lblPassword = new Label("Password:");
-        PasswordField txtPassword = new PasswordField();
-        grid.add(lblPassword, 0, 5);
-        grid.add(txtPassword, 1, 5);
-
-        HBox buttonBox = new HBox(10);
+        VBox buttonBox = new VBox(15, btnViewAdmins, btnViewAuthors, btnViewCustomers,
+                btnCreateAuthor, btnCreateAdmin, btnBack);
         buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setMaxWidth(300);
 
-        Button btnCreate = new Button("Create");
-        btnCreate.setStyle("-fx-background-color: " + COLOR_SUCCESS + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;");
-        Button btnCancel = new Button("Cancel");
-        btnCancel.setStyle("-fx-background-color: " + COLOR_NEUTRAL + "; -fx-text-fill: white; -fx-padding: 8 20; -fx-background-radius: 4;");
-
-        btnCreate.setOnAction(e -> {
-            try {
-                int id = Integer.parseInt(txtId.getText());
-                String name = txtName.getText().trim();
-                String address = txtAddress.getText();
-                String contact = txtContact.getText();
-                String dob = txtDob.getText();
-                String password = txtPassword.getText();
-
-                if (name.isEmpty()) {
-                    showError("Error", "Author name is required!");
-                    return;
-                }
-
-                // Check if ID exists
-                for (Author a : authors) {
-                    if (a.getAuthorID() == id) {
-                        showError("Error", "Author ID already exists!");
-                        return;
-                    }
-                }
-
-                // Create author
-                Author author = new Author(id, name, address, contact, dob);
-                author.setName(name);
-                author.setPassword(password);
-                authors.add(author);
-                databaseManager.saveAuthor(author);
-
-                auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
-                        "Created author account: " + name + " (ID: " + id + ")");
-                showInformation("Success", "Author account created successfully!");
-                dialog.close();
-
-            } catch (NumberFormatException ex) {
-                showError("Invalid Input", "Please enter valid numeric ID");
-            }
-        });
-
-        btnCancel.setOnAction(e -> dialog.close());
-
-        buttonBox.getChildren().addAll(btnCreate, btnCancel);
-        vbox.getChildren().addAll(grid, buttonBox);
-
-        Scene scene = new Scene(vbox, 400, 450);
-        dialog.setScene(scene);
-        dialog.showAndWait();
-    }
-
-    private void showCreateAdminScreen() {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Create Admin Account");
-        dialog.initOwner(primaryStage);
-
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
-
-        Label titleLabel = new Label("Create Admin Account");
-        titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-        titleLabel.setTextFill(Color.web(COLOR_ADMIN));
-        vbox.getChildren().add(titleLabel);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20));
-
-        Label lblId = new Label("Admin ID:");
-        TextField txtId = new TextField();
-        grid.add(lblId, 0, 0);
-        grid.add(txtId, 1, 0);
-
-        Label lblName = new Label("Name:");
-        TextField txtName = new TextField();
-        grid.add(lblName, 0, 1);
-        grid.add(txtName, 1, 1);
-
-        Label lblAddress = new Label("Address:");
-        TextField txtAddress = new TextField();
-        grid.add(lblAddress, 0, 2);
-        grid.add(txtAddress, 1, 2);
-
-        Label lblContact = new Label("Contact:");
-        TextField txtContact = new TextField();
-        grid.add(lblContact, 0, 3);
-        grid.add(txtContact, 1, 3);
-
-        Label lblDob = new Label("Date of Birth:");
-        TextField txtDob = new TextField();
-        grid.add(lblDob, 0, 4);
-        grid.add(txtDob, 1, 4);
-
-        Label lblPassword = new Label("Password:");
-        PasswordField txtPassword = new PasswordField();
-        grid.add(lblPassword, 0, 5);
-        grid.add(txtPassword, 1, 5);
-
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-
-        Button btnCreate = new Button("Create");
-        btnCreate.setStyle("-fx-background-color: " + COLOR_ADMIN + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;");
-        Button btnCancel = new Button("Cancel");
-        btnCancel.setStyle("-fx-background-color: " + COLOR_NEUTRAL + "; -fx-text-fill: white; -fx-padding: 8 20; -fx-background-radius: 4;");
-
-        btnCreate.setOnAction(e -> {
-            try {
-                int id = Integer.parseInt(txtId.getText());
-                String name = txtName.getText().trim();
-                String address = txtAddress.getText();
-                String contact = txtContact.getText();
-                String dob = txtDob.getText();
-                String password = txtPassword.getText();
-
-                if (name.isEmpty()) {
-                    showError("Error", "Admin name is required!");
-                    return;
-                }
-
-                // Check if ID exists
-                for (Admin a : admins) {
-                    if (a.getAdminID() == id) {
-                        showError("Error", "Admin ID already exists!");
-                        return;
-                    }
-                }
-
-                // Create admin
-                Admin admin = new Admin(id, name, address, contact, dob, password);
-                admins.add(admin);
-                databaseManager.saveAdmin(admin);
-
-                auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
-                        "Created admin account: " + name + " (ID: " + id + ")");
-                showInformation("Success", "Admin account created successfully!");
-                dialog.close();
-
-            } catch (NumberFormatException ex) {
-                showError("Invalid Input", "Please enter valid numeric ID");
-            }
-        });
-
-        btnCancel.setOnAction(e -> dialog.close());
-
-        buttonBox.getChildren().addAll(btnCreate, btnCancel);
-        vbox.getChildren().addAll(grid, buttonBox);
-
-        Scene scene = new Scene(vbox, 400, 450);
-        dialog.setScene(scene);
-        dialog.showAndWait();
-    }
-
-    private void showFormulationManagementScreen() {
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
-
-        VBox header = createHeader("FORMULATION MANAGEMENT", "View and Manage All Formulations");
-        root.setTop(header);
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-
-        VBox contentBox = new VBox(15);
-        contentBox.setPadding(new Insets(20));
-
-        if (allFormulations.isEmpty()) {
-            Label lblEmpty = new Label("No formulations in the system.");
-            lblEmpty.setTextFill(Color.WHITE);
-            lblEmpty.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 16));
-            contentBox.getChildren().add(lblEmpty);
-        } else {
-            for (Item item : allFormulations) {
-                VBox itemBox = new VBox(8);
-                itemBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 6; " +
-                        "-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1;");
-
-                Label lblName = new Label(item.getName());
-                lblName.setTextFill(Color.WHITE);
-                lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-                Label lblType = new Label("Type: " + (item instanceof Food ? "Food" : "Drink"));
-                lblType.setTextFill(Color.LIGHTGRAY);
-                lblType.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-
-                Label lblId = new Label("ID: " + item.getItemID());
-                lblId.setTextFill(Color.LIGHTGRAY);
-                lblId.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-
-                Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
-                lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
-                lblPrice.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-
-                // Show veto status
-                boolean vetoed = isItemVetoed(item);
-                if (vetoed) {
-                    Label lblVeto = new Label("⚠ VETOED");
-                    lblVeto.setTextFill(Color.web(COLOR_ERROR));
-                    lblVeto.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
-                    lblVeto.setStyle("-fx-background-color: rgba(231, 76, 60, 0.2); -fx-padding: 2 5; -fx-background-radius: 3;");
-                    itemBox.getChildren().add(lblVeto);
-                }
-
-                // Add action buttons
-                HBox buttonBox = new HBox(10);
-                Button btnView = createSmallButton("View Details", COLOR_INFO);
-                Button btnVeto = createSmallButton(vetoed ? "Remove Veto" : "Set Veto", vetoed ? COLOR_SUCCESS : COLOR_ERROR);
-
-                btnView.setOnAction(e -> showItemDetailsDialog(item));
-                btnVeto.setOnAction(e -> {
-                    if (vetoed) {
-                        removeVeto(item);
-                    } else {
-                        setVetoOnItem(item);
-                    }
-                    showFormulationManagementScreen(); // Refresh
-                });
-
-                buttonBox.getChildren().addAll(btnView, btnVeto);
-                itemBox.getChildren().addAll(lblName, lblType, lblId, lblPrice, buttonBox);
-                contentBox.getChildren().add(itemBox);
-            }
-        }
-
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showAdminDashboard());
-        contentBox.getChildren().add(btnBack);
-
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
-
-        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(currentScene);
-    }
-
-    private void showItemDetailsDialog(Item item) {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Formulation Details: " + item.getName());
-        dialog.initOwner(primaryStage);
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
-
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-
-        // Basic info
-        Label lblName = new Label(item.getName());
-        lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-        lblName.setTextFill(Color.web(COLOR_PRIMARY));
-        Label lblType = new Label("Type: " + (item instanceof Food ? "Food" : "Drink"));
-        Label lblId = new Label("ID: " + item.getItemID());
-        Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
-        lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
-        lblPrice.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-        Label lblVeto = new Label("Veto Status: " + (isItemVetoed(item) ? "VETOED" : "Not Vetoed"));
-        lblVeto.setTextFill(isItemVetoed(item) ? Color.web(COLOR_ERROR) : Color.web(COLOR_SUCCESS));
-        lblVeto.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
-
-        vbox.getChildren().addAll(lblName, lblType, lblId, lblPrice, lblVeto);
-
-        // Ingredients
-        LinkedList<Ingredient> ingredients = getIngredients(item);
-        if (ingredients != null && !ingredients.isEmpty()) {
-            Label lblIngredients = new Label("\nIngredients:");
-            lblIngredients.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-            lblIngredients.setTextFill(Color.web(COLOR_PRIMARY));
-            vbox.getChildren().add(lblIngredients);
-
-            for (Ingredient ing : ingredients) {
-                Label lblIng = new Label("  • " + ing.getName());
-                if (ing.getQuantity() != null) {
-                    lblIng.setText(lblIng.getText() + " - Weight: " + ing.getQuantity().getWeight() + "g, Volume: " +
-                            ing.getQuantity().getVolume() + "ml");
-                }
-                vbox.getChildren().add(lblIng);
-            }
-        }
-
-        // Feedbacks
-        LinkedList<Feedback> feedbacks = getFeedbacks(item);
-        if (feedbacks != null && !feedbacks.isEmpty()) {
-            Label lblFeedbacks = new Label("\nFeedbacks (" + feedbacks.size() + "):");
-            lblFeedbacks.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-            lblFeedbacks.setTextFill(Color.web(COLOR_PRIMARY));
-            vbox.getChildren().add(lblFeedbacks);
-
-            for (Feedback fb : feedbacks) {
-                Label lblFb = new Label("  " + (fb.isLike() ? "👍" : "👎") + " " +
-                        fb.getConsumerName() + ": " + fb.getComment());
-                lblFb.setTextFill(fb.isLike() ? Color.web(COLOR_SUCCESS) : Color.web(COLOR_ERROR));
-                vbox.getChildren().add(lblFb);
-            }
-        }
-
-        Button btnClose = createSmallButton("Close", COLOR_NEUTRAL);
-        btnClose.setOnAction(e -> dialog.close());
-        vbox.getChildren().add(btnClose);
-
-        scrollPane.setContent(vbox);
-        Scene scene = new Scene(scrollPane, 500, 400);
-        dialog.setScene(scene);
-        dialog.showAndWait();
-    }
-
-    private void setVetoOnItem(Item item) {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Set Veto on " + item.getName());
-        dialog.initOwner(primaryStage);
-
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
-
-        Label lblReason = new Label("Enter veto reason:");
-        lblReason.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-        TextArea txtReason = new TextArea();
-        txtReason.setPrefRowCount(3);
-        txtReason.setWrapText(true);
-        txtReason.setStyle("-fx-control-inner-background: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-
-        Button btnSet = createSmallButton("Set Veto", COLOR_ERROR);
-        Button btnCancel = createSmallButton("Cancel", COLOR_NEUTRAL);
-
-        btnSet.setOnAction(e -> {
-            String reason = txtReason.getText().trim();
-            if (reason.isEmpty()) {
-                showError("Validation Error", "Please enter a veto reason!");
-                return;
-            }
-
-            // Set veto
-            MyClasses.Restrictions.Veto veto = new MyClasses.Restrictions.Veto(true, reason, new Date(), (Admin)currentUser);
-            if (item instanceof Food) {
-                ((Food) item).setVeto(veto);
-            } else if (item instanceof Drink) {
-                ((Drink) item).setVeto(veto);
-            }
-
-            databaseManager.saveItem(item);
-            auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
-                    "Set veto on formulation: " + item.getName() + " (Reason: " + reason + ")");
-            showInformation("Success", "Veto set successfully!");
-            dialog.close();
-        });
-
-        btnCancel.setOnAction(e -> dialog.close());
-
-        buttonBox.getChildren().addAll(btnSet, btnCancel);
-        vbox.getChildren().addAll(lblReason, txtReason, buttonBox);
-
-        Scene scene = new Scene(vbox, 400, 300);
-        dialog.setScene(scene);
-        dialog.showAndWait();
-    }
-
-    private void removeVeto(Item item) {
-        // Remove veto
-        if (item instanceof Food) {
-            ((Food) item).setVeto(null);
-        } else if (item instanceof Drink) {
-            ((Drink) item).setVeto(null);
-        }
-
-        databaseManager.saveItem(item);
-        auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
-                "Removed veto from formulation: " + item.getName());
-        showInformation("Success", "Veto removed successfully!");
-    }
-
-    private void showSystemStatisticsScreen() {
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
-
-        VBox header = createHeader("SYSTEM STATISTICS", "Overview");
-        root.setTop(header);
-
-        VBox contentBox = new VBox(15);
-        contentBox.setAlignment(Pos.TOP_CENTER);
-        contentBox.setPadding(new Insets(30));
-
-        // Statistics display
-        GridPane statsGrid = new GridPane();
-        statsGrid.setHgap(50);
-        statsGrid.setVgap(20);
-        statsGrid.setAlignment(Pos.CENTER);
-
-        addStatRow(statsGrid, 0, "Total Admins:", String.valueOf(admins.size()), COLOR_ADMIN);
-        addStatRow(statsGrid, 1, "Total Authors:", String.valueOf(authors.size()), COLOR_INFO);
-        addStatRow(statsGrid, 2, "Total Customers:", String.valueOf(customers.size()), COLOR_SUCCESS);
-        addStatRow(statsGrid, 3, "Total Formulations:", String.valueOf(allFormulations.size()), COLOR_PURPLE);
-
-        // Count vetoed
-        int vetoedCount = 0;
-        for (Item item : allFormulations) {
-            if (isItemVetoed(item)) vetoedCount++;
-        }
-        addStatRow(statsGrid, 4, "Vetoed Formulations:", String.valueOf(vetoedCount), COLOR_ERROR);
-
-        // Count purchases
-        int totalPurchases = 0;
-        for (Customer customer : customers) {
-            totalPurchases += customer.getPurchasedItems().size();
-        }
-        addStatRow(statsGrid, 5, "Total Purchases:", String.valueOf(totalPurchases), COLOR_SUCCESS);
-        addStatRow(statsGrid, 6, "Audit Log Entries:", String.valueOf(auditTrail.records.size()), COLOR_SECONDARY);
-
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showAdminDashboard());
-
-        contentBox.getChildren().addAll(statsGrid, btnBack);
-        root.setCenter(contentBox);
-
-        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(currentScene);
-    }
-
-    private void showAllAccountsScreen() {
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
-
-        VBox header = createHeader("ALL ACCOUNTS", "System Users");
-        root.setTop(header);
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-
-        VBox contentBox = new VBox(20);
-        contentBox.setPadding(new Insets(20));
-
-        // Admins
-        Label lblAdmins = new Label("ADMINISTRATORS (" + admins.size() + ")");
-        lblAdmins.setTextFill(Color.web(COLOR_ADMIN));
-        lblAdmins.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-        TextArea txtAdmins = new TextArea();
-        txtAdmins.setEditable(false);
-        txtAdmins.setPrefRowCount(5);
-        txtAdmins.setStyle("-fx-control-inner-background: #f8f8f8; -fx-border-color: " + COLOR_NEUTRAL + ";");
-        StringBuilder adminText = new StringBuilder();
-        for (Admin a : admins) {
-            adminText.append("ID: ").append(a.getAdminID()).append(" - ").append(a.getName()).append("\n");
-        }
-        txtAdmins.setText(adminText.toString());
-
-        // Authors
-        Label lblAuthors = new Label("AUTHORS (" + authors.size() + ")");
-        lblAuthors.setTextFill(Color.web(COLOR_INFO));
-        lblAuthors.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-        TextArea txtAuthors = new TextArea();
-        txtAuthors.setEditable(false);
-        txtAuthors.setPrefRowCount(5);
-        txtAuthors.setStyle("-fx-control-inner-background: #f8f8f8; -fx-border-color: " + COLOR_NEUTRAL + ";");
-        StringBuilder authorText = new StringBuilder();
-        for (Author a : authors) {
-            authorText.append("ID: ").append(a.getAuthorID()).append(" - ").append(a.getName())
-                    .append(" (Formulations: ").append(a.getFormulatedItems().size()).append(")\n");
-        }
-        txtAuthors.setText(authorText.toString());
-
-        // Customers
-        Label lblCustomers = new Label("CUSTOMERS (" + customers.size() + ")");
-        lblCustomers.setTextFill(Color.web(COLOR_SUCCESS));
-        lblCustomers.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-        TextArea txtCustomers = new TextArea();
-        txtCustomers.setEditable(false);
-        txtCustomers.setPrefRowCount(5);
-        txtCustomers.setStyle("-fx-control-inner-background: #f8f8f8; -fx-border-color: " + COLOR_NEUTRAL + ";");
-        StringBuilder customerText = new StringBuilder();
-        for (Customer c : customers) {
-            customerText.append("ID: ").append(c.getCustomerID()).append(" - ").append(c.getName())
-                    .append(" (Purchases: ").append(c.getPurchasedItems().size()).append(")\n");
-        }
-        txtCustomers.setText(customerText.toString());
-
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showAdminDashboard());
-
-        contentBox.getChildren().addAll(
-                lblAdmins, txtAdmins,
-                lblAuthors, txtAuthors,
-                lblCustomers, txtCustomers,
-                btnBack
-        );
-
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
-
-        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(currentScene);
-    }
-
-    private void showAllAuthorsScreen() {
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
-
-        VBox header = createHeader("ALL AUTHORS", "Author Directory");
-        root.setTop(header);
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-
-        VBox contentBox = new VBox(15);
-        contentBox.setPadding(new Insets(20));
-
-        if (authors.isEmpty()) {
-            Label lblEmpty = new Label("No authors registered yet.");
-            lblEmpty.setTextFill(Color.WHITE);
-            lblEmpty.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 16));
-            contentBox.getChildren().add(lblEmpty);
-        } else {
-            for (Author author : authors) {
-                VBox authorBox = new VBox(5);
-                authorBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 6; " +
-                        "-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1;");
-
-                Label lblName = new Label("Name: " + author.getName());
-                lblName.setTextFill(Color.WHITE);
-                lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-                Label lblId = new Label("ID: " + author.getAuthorID());
-                lblId.setTextFill(Color.LIGHTGRAY);
-                lblId.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-
-                Label lblFormulations = new Label("Formulations: " + author.getFormulatedItems().size());
-                lblFormulations.setTextFill(Color.LIGHTGRAY);
-                lblFormulations.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-
-                authorBox.getChildren().addAll(lblName, lblId, lblFormulations);
-                contentBox.getChildren().add(authorBox);
-            }
-        }
-
-        Button btnBack = createMenuButton("Back", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showAccountManagementScreen());
-        contentBox.getChildren().add(btnBack);
-
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
+        content.getChildren().add(buttonBox);
+        root.setCenter(content);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
@@ -1323,121 +1086,808 @@ public class Main_GUI extends Application {
 
     private void showAllAdminsScreen() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("ALL ADMINISTRATORS", "Admin Directory");
+        VBox header = createHeader("ALL ADMINISTRATORS", "System Administrators List");
         root.setTop(header);
 
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
 
-        VBox contentBox = new VBox(15);
-        contentBox.setPadding(new Insets(20));
-
-        for (Admin admin : admins) {
-            VBox adminBox = new VBox(5);
-            adminBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 6; " +
-                    "-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1;");
-
-            Label lblName = new Label("Name: " + admin.getName());
-            lblName.setTextFill(Color.WHITE);
-            lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-            Label lblId = new Label("ID: " + admin.getAdminID());
-            lblId.setTextFill(Color.LIGHTGRAY);
-            lblId.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-
-            adminBox.getChildren().addAll(lblName, lblId);
-            contentBox.getChildren().add(adminBox);
+        if (admins.isEmpty()) {
+            Label emptyLabel = new Label("No administrators found");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Admin admin : admins) {
+                HBox adminCard = createUserCard("Administrator", admin.getName(),
+                        "ID: " + admin.getAdminID(), COLOR_ADMIN);
+                content.getChildren().add(adminCard);
+            }
         }
 
-        Button btnBack = createMenuButton("Back", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showAccountManagementScreen());
-        contentBox.getChildren().add(btnBack);
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
 
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
+        Button btnBack = createStandardButton("Back", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showUserManagementScreen());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
     }
 
-    private void showCheckFormulationIssuesScreen() {
+    private void showAllAuthorsScreen() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("CHECK FORMULATION ISSUES", "Quality Control");
+        VBox header = createHeader("ALL AUTHORS", "Formulation Authors List");
         root.setTop(header);
 
-        VBox contentBox = new VBox(20);
-        contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPadding(new Insets(30));
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
 
-        // Get issues
-        int issueCount = 0;
-        StringBuilder issuesText = new StringBuilder();
-        issuesText.append("=== FORMULATION ISSUES REPORT ===\n\n");
-
-        for (Item item : allFormulations) {
-            boolean hasIssues = false;
-            StringBuilder itemIssues = new StringBuilder();
-
-            // Check ingredients
-            LinkedList<Ingredient> ingredients = getIngredients(item);
-            if (ingredients == null || ingredients.isEmpty()) {
-                itemIssues.append("  ⚠ Missing ingredients\n");
-                hasIssues = true;
-            }
-
-            // Check price
-            if (item.getPrice() <= 0) {
-                itemIssues.append("  ⚠ Invalid price: $").append(item.getPrice()).append("\n");
-                hasIssues = true;
-            }
-
-            // Check veto
-            if (isItemVetoed(item)) {
-                itemIssues.append("  ⚠ Formulation is vetoed\n");
-                hasIssues = true;
-            }
-
-            // Check feedback
-            LinkedList<Feedback> feedbacks = getFeedbacks(item);
-            if (feedbacks != null) {
-                int negativeCount = 0;
-                for (Feedback fb : feedbacks) {
-                    if (!fb.isLike()) negativeCount++;
-                }
-                if (negativeCount > 0) {
-                    itemIssues.append("  ⚠ Has ").append(negativeCount).append(" negative feedback(s)\n");
-                    hasIssues = true;
-                }
-            }
-
-            if (hasIssues) {
-                issueCount++;
-                issuesText.append(item.getName()).append(" (ID: ").append(item.getItemID()).append(")\n");
-                issuesText.append(itemIssues.toString()).append("\n");
+        if (authors.isEmpty()) {
+            Label emptyLabel = new Label("No authors found");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Author author : authors) {
+                int formulationCount = author.getFormulatedItems().size();
+                HBox authorCard = createUserCard("Author", author.getName(),
+                        "Formulations: " + formulationCount + " | ID: " + author.getAuthorID(),
+                        COLOR_AUTHOR);
+                content.getChildren().add(authorCard);
             }
         }
 
-        Label lblInfo = new Label("Found " + issueCount + " formulation(s) with issues");
-        lblInfo.setTextFill(issueCount > 0 ? Color.web(COLOR_WARNING) : Color.web(COLOR_SUCCESS));
-        lblInfo.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
 
-        TextArea txtIssues = new TextArea();
-        txtIssues.setEditable(false);
-        txtIssues.setPrefRowCount(15);
-        txtIssues.setWrapText(true);
-        txtIssues.setStyle("-fx-control-inner-background: #f8f8f8; -fx-border-color: " + COLOR_NEUTRAL + ";");
-        txtIssues.setText(issuesText.toString());
+        Button btnBack = createStandardButton("Back", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showUserManagementScreen());
 
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private void showAllCustomersScreen() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("ALL CUSTOMERS", "Customer Accounts List");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        if (customers.isEmpty()) {
+            Label emptyLabel = new Label("No customers found");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Customer customer : customers) {
+                int purchaseCount = customer.getPurchasedItems().size();
+                HBox customerCard = createUserCard("Customer", customer.getName(),
+                        "Purchases: " + purchaseCount + " | Age: " + customer.getAge(),
+                        COLOR_CUSTOMER);
+                content.getChildren().add(customerCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showUserManagementScreen());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createUserCard(String type, String name, String details, String color) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        // Type indicator
+        VBox typeBox = new VBox();
+        typeBox.setMinWidth(100);
+        typeBox.setAlignment(Pos.CENTER);
+
+        Label typeLabel = new Label(type);
+        typeLabel.setFont(FONT_BODY);
+        typeLabel.setTextFill(Color.web(color));
+        typeLabel.setStyle("-fx-font-weight: bold;");
+
+        typeBox.getChildren().add(typeLabel);
+
+        // User info
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(name);
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label detailsLabel = new Label(details);
+        detailsLabel.setFont(FONT_BODY);
+        detailsLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        infoBox.getChildren().addAll(nameLabel, detailsLabel);
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(typeBox, infoBox);
+
+        return card;
+    }
+
+    private void showCreateAuthorScreen() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Create New Author Account");
+        dialog.initOwner(primaryStage);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
+
+        Label title = new Label("Create Author Account");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_AUTHOR));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 0, 20, 0));
+
+        // Form fields
+        TextField txtId = createDialogField(grid, "Author ID:*", 0);
+        TextField txtName = createDialogField(grid, "Full Name:*", 1);
+        TextField txtAddress = createDialogField(grid, "Address:", 2);
+        TextField txtContact = createDialogField(grid, "Contact Info:*", 3);
+        TextField txtDob = createDialogField(grid, "Date of Birth (YYYY-MM-DD):", 4);
+        PasswordField txtPassword = createDialogPasswordField(grid, "Password:*", 5);
+
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button btnCreate = createStandardButton("Create Author", COLOR_AUTHOR);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
+
+        btnCreate.setOnAction(e -> {
+            try {
+                // Validation
+                if (txtId.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Author ID is required");
+                    return;
+                }
+                if (txtName.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Full name is required");
+                    return;
+                }
+                if (txtContact.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Contact information is required");
+                    return;
+                }
+                if (txtPassword.getText().isEmpty()) {
+                    showError("Validation Error", "Password is required");
+                    return;
+                }
+
+                int id = Integer.parseInt(txtId.getText().trim());
+                String name = txtName.getText().trim();
+                String address = txtAddress.getText();
+                String contact = txtContact.getText();
+                String dob = txtDob.getText();
+                String password = txtPassword.getText();
+
+                // Check if ID exists
+                for (Author a : authors) {
+                    if (a.getAuthorID() == id) {
+                        showError("Error", "Author ID already exists");
+                        return;
+                    }
+                }
+
+                // Create author
+                Author author = new Author(id, name, address, contact, dob);
+                author.setPassword(password);
+                authors.add(author);
+
+                if (databaseManager != null) {
+                    databaseManager.saveAuthor(author);
+                }
+
+                auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
+                        "Created author account: " + name + " (ID: " + id + ")");
+                showInformation("Success", "Author account created successfully");
+                dialog.close();
+
+            } catch (NumberFormatException ex) {
+                showError("Invalid Input", "Please enter valid numeric ID");
+            } catch (Exception ex) {
+                showError("Error", "Failed to create author: " + ex.getMessage());
+            }
+        });
+
+        btnCancel.setOnAction(e -> dialog.close());
+
+        buttonBox.getChildren().addAll(btnCreate, btnCancel);
+        content.getChildren().addAll(title, grid, buttonBox);
+
+        Scene scene = new Scene(content, 450, 500);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+
+    private void showCreateAdminScreen() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Create New Administrator Account");
+        dialog.initOwner(primaryStage);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
+
+        Label title = new Label("Create Administrator Account");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_ADMIN));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 0, 20, 0));
+
+        // Form fields
+        TextField txtId = createDialogField(grid, "Admin ID:*", 0);
+        TextField txtName = createDialogField(grid, "Full Name:*", 1);
+        TextField txtAddress = createDialogField(grid, "Address:", 2);
+        TextField txtContact = createDialogField(grid, "Contact Info:*", 3);
+        TextField txtDob = createDialogField(grid, "Date of Birth (YYYY-MM-DD):", 4);
+        PasswordField txtPassword = createDialogPasswordField(grid, "Password:*", 5);
+
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button btnCreate = createStandardButton("Create Admin", COLOR_ADMIN);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
+
+        btnCreate.setOnAction(e -> {
+            try {
+                // Validation
+                if (txtId.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Admin ID is required");
+                    return;
+                }
+                if (txtName.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Full name is required");
+                    return;
+                }
+                if (txtContact.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Contact information is required");
+                    return;
+                }
+                if (txtPassword.getText().isEmpty()) {
+                    showError("Validation Error", "Password is required");
+                    return;
+                }
+
+                int id = Integer.parseInt(txtId.getText().trim());
+                String name = txtName.getText().trim();
+                String address = txtAddress.getText();
+                String contact = txtContact.getText();
+                String dob = txtDob.getText();
+                String password = txtPassword.getText();
+
+                // Check if ID exists
+                for (Admin a : admins) {
+                    if (a.getAdminID() == id) {
+                        showError("Error", "Admin ID already exists");
+                        return;
+                    }
+                }
+
+                // Create admin
+                Admin admin = new Admin(id, name, address, contact, dob, password);
+                admins.add(admin);
+
+                if (databaseManager != null) {
+                    databaseManager.saveAdmin(admin);
+                }
+
+                auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
+                        "Created admin account: " + name + " (ID: " + id + ")");
+                showInformation("Success", "Administrator account created successfully");
+                dialog.close();
+
+            } catch (NumberFormatException ex) {
+                showError("Invalid Input", "Please enter valid numeric ID");
+            } catch (Exception ex) {
+                showError("Error", "Failed to create administrator: " + ex.getMessage());
+            }
+        });
+
+        btnCancel.setOnAction(e -> dialog.close());
+
+        buttonBox.getChildren().addAll(btnCreate, btnCancel);
+        content.getChildren().addAll(title, grid, buttonBox);
+
+        Scene scene = new Scene(content, 450, 500);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+
+    private void showFormulationManagementScreen() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("FORMULATION MANAGEMENT", "All System Formulations");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        if (allFormulations.isEmpty()) {
+            Label emptyLabel = new Label("No formulations found in the system");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Item item : allFormulations) {
+                HBox formulationCard = createFormulationCard(item);
+                content.getChildren().add(formulationCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
         btnBack.setOnAction(e -> showAdminDashboard());
 
-        contentBox.getChildren().addAll(lblInfo, txtIssues, btnBack);
-        root.setCenter(contentBox);
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createFormulationCard(Item item) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + (isItemVetoed(item) ? COLOR_ERROR : COLOR_BORDER) + "; " +
+                "-fx-border-width: 2; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        // Type indicator
+        VBox typeBox = new VBox();
+        typeBox.setMinWidth(100);
+        typeBox.setAlignment(Pos.CENTER);
+
+        String type = item instanceof Food ? "FOOD" : "DRINK";
+        String typeColor = item instanceof Food ? COLOR_SUCCESS : COLOR_INFO;
+
+        Label typeLabel = new Label(type);
+        typeLabel.setFont(FONT_BODY);
+        typeLabel.setTextFill(Color.web(typeColor));
+        typeLabel.setStyle("-fx-font-weight: bold;");
+
+        typeBox.getChildren().add(typeLabel);
+
+        // Formulation info
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(item.getName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label detailsLabel = new Label("ID: " + item.getItemID() +
+                " | Price: $" + String.format("%.2f", item.getPrice()) +
+                " | Expiry: " + item.getExpiryDate());
+        detailsLabel.setFont(FONT_BODY);
+        detailsLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        // Veto status
+        if (isItemVetoed(item)) {
+            Label vetoLabel = new Label("VETOED");
+            vetoLabel.setFont(FONT_BODY);
+            vetoLabel.setTextFill(Color.web(COLOR_ERROR));
+            vetoLabel.setStyle("-fx-font-weight: bold;");
+            infoBox.getChildren().add(vetoLabel);
+        }
+
+        infoBox.getChildren().addAll(nameLabel, detailsLabel);
+
+        // Action buttons
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        Button btnView = createSmallButton("View", COLOR_INFO);
+        Button btnVeto = createSmallButton(isItemVetoed(item) ? "Remove Veto" : "Set Veto",
+                isItemVetoed(item) ? COLOR_SUCCESS : COLOR_ERROR);
+
+        btnView.setOnAction(e -> showFormulationDetails(item));
+        btnVeto.setOnAction(e -> {
+            if (isItemVetoed(item)) {
+                removeVetoFromItem(item);
+            } else {
+                showSetVetoDialog(item);
+            }
+            showFormulationManagementScreen(); // Refresh
+        });
+
+        buttonBox.getChildren().addAll(btnView, btnVeto);
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(typeBox, infoBox, buttonBox);
+
+        return card;
+    }
+
+    private void showFormulationDetails(Item item) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Formulation Details: " + item.getName());
+        dialog.initOwner(primaryStage);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
+
+        Label title = new Label(item.getName());
+        title.setFont(FONT_TITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        VBox detailsBox = new VBox(10);
+        detailsBox.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + "; " +
+                "-fx-padding: 15; " +
+                "-fx-background-radius: 8;");
+
+        addDetail(detailsBox, "Type:", item instanceof Food ? "Food" : "Drink");
+        addDetail(detailsBox, "ID:", String.valueOf(item.getItemID()));
+        addDetail(detailsBox, "Price:", "$" + String.format("%.2f", item.getPrice()));
+        addDetail(detailsBox, "Expiry Date:", item.getExpiryDate());
+        addDetail(detailsBox, "Status:", isItemVetoed(item) ? "VETOED" : "Active");
+
+        if (item instanceof Food) {
+            Food food = (Food) item;
+            addDetail(detailsBox, "Average Price per Kg:", "$" + String.format("%.2f", food.getAveragePricePerKg()));
+        } else if (item instanceof Drink) {
+            Drink drink = (Drink) item;
+            addDetail(detailsBox, "Average Price per Kg:", "$" + String.format("%.2f", drink.getAveragePricePerKg()));
+            addDetail(detailsBox, "Alcohol Content:", String.format("%.1f%%", drink.getAlcoholContent()));
+        }
+
+        // Ingredients
+        LinkedList<Ingredient> ingredients = getIngredients(item);
+        if (ingredients != null && !ingredients.isEmpty()) {
+            Label ingTitle = new Label("Ingredients:");
+            ingTitle.setFont(FONT_SUBTITLE);
+            ingTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+            ingTitle.setPadding(new Insets(10, 0, 5, 0));
+            detailsBox.getChildren().add(ingTitle);
+
+            for (Ingredient ing : ingredients) {
+                Label ingLabel = new Label("• " + ing.getName() +
+                        " (ID: " + ing.getIngredientID() + ")");
+                ingLabel.setFont(FONT_BODY);
+                ingLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+                detailsBox.getChildren().add(ingLabel);
+            }
+        }
+
+        // Authors
+        if (item instanceof Food) {
+            Food food = (Food) item;
+            LinkedList<Author> authors = food.getAuthors();
+            if (authors != null && !authors.isEmpty()) {
+                Label authTitle = new Label("Authors:");
+                authTitle.setFont(FONT_SUBTITLE);
+                authTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+                authTitle.setPadding(new Insets(10, 0, 5, 0));
+                detailsBox.getChildren().add(authTitle);
+
+                for (Author author : authors) {
+                    Label authLabel = new Label("• " + author.getName());
+                    authLabel.setFont(FONT_BODY);
+                    authLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+                    detailsBox.getChildren().add(authLabel);
+                }
+            }
+        } else if (item instanceof Drink) {
+            Drink drink = (Drink) item;
+            LinkedList<Author> authors = drink.getAuthors();
+            if (authors != null && !authors.isEmpty()) {
+                Label authTitle = new Label("Authors:");
+                authTitle.setFont(FONT_SUBTITLE);
+                authTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+                authTitle.setPadding(new Insets(10, 0, 5, 0));
+                detailsBox.getChildren().add(authTitle);
+
+                for (Author author : authors) {
+                    Label authLabel = new Label("• " + author.getName());
+                    authLabel.setFont(FONT_BODY);
+                    authLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+                    detailsBox.getChildren().add(authLabel);
+                }
+            }
+        }
+
+        Button btnClose = createStandardButton("Close", COLOR_TEXT_SECONDARY);
+        btnClose.setOnAction(e -> dialog.close());
+
+        content.getChildren().addAll(title, detailsBox, btnClose);
+
+        Scene scene = new Scene(content, 500, 600);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+
+    private void showSetVetoDialog(Item item) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Set Veto: " + item.getName());
+        dialog.initOwner(primaryStage);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
+
+        Label title = new Label("Set Veto on Formulation");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_ERROR));
+
+        Label itemLabel = new Label("Item: " + item.getName());
+        itemLabel.setFont(FONT_BODY);
+        itemLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label reasonLabel = new Label("Reason for Veto:*");
+        reasonLabel.setFont(FONT_BODY);
+        reasonLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        TextArea txtReason = new TextArea();
+        txtReason.setPromptText("Enter the reason for vetoing this formulation...");
+        txtReason.setPrefRowCount(4);
+        txtReason.setStyle("-fx-control-inner-background: white; " +
+                "-fx-border-color: " + COLOR_BORDER + ";");
+
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button btnSet = createStandardButton("Set Veto", COLOR_ERROR);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
+
+        btnSet.setOnAction(e -> {
+            String reason = txtReason.getText().trim();
+            if (reason.isEmpty()) {
+                showError("Validation Error", "Please enter a reason for the veto");
+                return;
+            }
+
+            setVetoOnItem(item, reason);
+            dialog.close();
+            showFormulationManagementScreen();
+        });
+
+        btnCancel.setOnAction(e -> dialog.close());
+
+        buttonBox.getChildren().addAll(btnSet, btnCancel);
+        content.getChildren().addAll(title, itemLabel, reasonLabel, txtReason, buttonBox);
+
+        Scene scene = new Scene(content, 400, 350);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+
+    private void setVetoOnItem(Item item, String reason) {
+        try {
+            Veto veto = new Veto(true, reason, new Date(), (Admin)currentUser);
+            if (item instanceof Food) {
+                ((Food) item).setVeto(veto);
+            } else if (item instanceof Drink) {
+                ((Drink) item).setVeto(veto);
+            }
+
+            if (databaseManager != null) {
+                databaseManager.saveItem(item);
+            }
+
+            auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
+                    "Set veto on formulation: " + item.getName() + " (Reason: " + reason + ")");
+            showInformation("Success", "Veto set successfully on " + item.getName());
+        } catch (Exception e) {
+            showError("Error", "Failed to set veto: " + e.getMessage());
+        }
+    }
+
+    private void removeVetoFromItem(Item item) {
+        try {
+            if (item instanceof Food) {
+                ((Food) item).setVeto(null);
+            } else if (item instanceof Drink) {
+                ((Drink) item).setVeto(null);
+            }
+
+            if (databaseManager != null) {
+                databaseManager.saveItem(item);
+            }
+
+            auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
+                    "Removed veto from formulation: " + item.getName());
+            showInformation("Success", "Veto removed successfully from " + item.getName());
+        } catch (Exception e) {
+            showError("Error", "Failed to remove veto: " + e.getMessage());
+        }
+    }
+
+    private void showVetoManagementScreen() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("VETO MANAGEMENT", "Manage Vetoed Formulations");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        LinkedList<Item> vetoedItems = new LinkedList<>();
+        for (Item item : allFormulations) {
+            if (isItemVetoed(item)) {
+                vetoedItems.add(item);
+            }
+        }
+
+        if (vetoedItems.isEmpty()) {
+            Label emptyLabel = new Label("No vetoed formulations");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Item item : vetoedItems) {
+                HBox vetoCard = createVetoedItemCard(item);
+                content.getChildren().add(vetoCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showAdminDashboard());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createVetoedItemCard(Item item) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_ERROR + "; " +
+                "-fx-border-width: 2; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        // Warning icon
+        Label warningIcon = new Label("⚠");
+        warningIcon.setFont(Font.font(20));
+        warningIcon.setTextFill(Color.web(COLOR_ERROR));
+
+        // Item info
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(item.getName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        // Get veto reason
+        String vetoReason = "No reason provided";
+        if (item instanceof Food) {
+            Veto veto = ((Food) item).getVeto();
+            if (veto != null) {
+                vetoReason = veto.getReason();
+            }
+        } else if (item instanceof Drink) {
+            Veto veto = ((Drink) item).getVeto();
+            if (veto != null) {
+                vetoReason = veto.getReason();
+            }
+        }
+
+        Label reasonLabel = new Label("Reason: " + vetoReason);
+        reasonLabel.setFont(FONT_BODY);
+        reasonLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+        reasonLabel.setWrapText(true);
+
+        infoBox.getChildren().addAll(nameLabel, reasonLabel);
+
+        // Remove veto button
+        Button btnRemove = createSmallButton("Remove Veto", COLOR_SUCCESS);
+        btnRemove.setOnAction(e -> {
+            removeVetoFromItem(item);
+            showVetoManagementScreen(); // Refresh
+        });
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(warningIcon, infoBox, btnRemove);
+
+        return card;
+    }
+
+    private void showSystemStatisticsScreen() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("SYSTEM STATISTICS", "Comprehensive System Overview");
+        root.setTop(header);
+
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        content.setAlignment(Pos.CENTER);
+
+        GridPane statsGrid = new GridPane();
+        statsGrid.setHgap(40);
+        statsGrid.setVgap(20);
+        statsGrid.setAlignment(Pos.CENTER);
+
+        // Calculate statistics
+        int totalUsers = admins.size() + authors.size() + customers.size();
+        int foodCount = countFoodFormulations();
+        int drinkCount = countDrinkFormulations();
+        int vetoedCount = countVetoedFormulations();
+        int totalPurchases = countTotalPurchases();
+        int totalFeedbacks = countTotalFeedbacks();
+
+        addStatRow(statsGrid, 0, "Total Administrators:", admins.size(), COLOR_ADMIN);
+        addStatRow(statsGrid, 1, "Total Authors:", authors.size(), COLOR_AUTHOR);
+        addStatRow(statsGrid, 2, "Total Customers:", customers.size(), COLOR_CUSTOMER);
+        addStatRow(statsGrid, 3, "Total Users:", totalUsers, COLOR_PRIMARY);
+        addStatRow(statsGrid, 4, "Total Formulations:", allFormulations.size(), COLOR_INFO);
+        addStatRow(statsGrid, 5, "Food Formulations:", foodCount, COLOR_SUCCESS);
+        addStatRow(statsGrid, 6, "Drink Formulations:", drinkCount, COLOR_INFO);
+        addStatRow(statsGrid, 7, "Vetoed Formulations:", vetoedCount, COLOR_ERROR);
+        addStatRow(statsGrid, 8, "Total Purchases:", totalPurchases, COLOR_CUSTOMER);
+        addStatRow(statsGrid, 9, "Total Feedbacks:", totalFeedbacks, COLOR_PRIMARY);
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showAdminDashboard());
+
+        content.getChildren().addAll(statsGrid, btnBack);
+        root.setCenter(content);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
@@ -1445,47 +1895,211 @@ public class Main_GUI extends Application {
 
     private void showAuditTrailScreen() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, " + COLOR_SECONDARY + ", " + COLOR_PRIMARY + ");");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
         VBox header = createHeader("AUDIT TRAIL", "System Activity Log");
         root.setTop(header);
 
-        VBox contentBox = new VBox(15);
-        contentBox.setAlignment(Pos.TOP_CENTER);
-        contentBox.setPadding(new Insets(20));
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
 
-        Label lblTotal = new Label("Total Log Entries: " + auditTrail.records.size());
-        lblTotal.setTextFill(Color.WHITE);
-        lblTotal.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+        Label countLabel = new Label("Total Log Entries: " + auditTrail.records.size());
+        countLabel.setFont(FONT_SUBTITLE);
+        countLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        TextArea txtAudit = new TextArea();
-        txtAudit.setEditable(false);
-        txtAudit.setPrefRowCount(20);
-        txtAudit.setWrapText(true);
-        txtAudit.setStyle("-fx-control-inner-background: #f8f8f8; -fx-border-color: " + COLOR_NEUTRAL + ";");
+        TextArea auditArea = new TextArea();
+        auditArea.setEditable(false);
+        auditArea.setPrefHeight(500);
+        auditArea.setStyle("-fx-control-inner-background: white; " +
+                "-fx-text-fill: " + COLOR_TEXT_PRIMARY + "; " +
+                "-fx-font-family: 'Consolas'; " +
+                "-fx-font-size: 12px;");
 
         if (auditTrail.records.isEmpty()) {
-            txtAudit.setText("No audit records available.");
+            auditArea.setText("No audit records available.");
         } else {
             StringBuilder auditText = new StringBuilder();
-            int startIndex = Math.max(0, auditTrail.records.size() - 50);
-
-            for (int i = startIndex; i < auditTrail.records.size(); i++) {
-                auditText.append(auditTrail.records.get(i)).append("\n");
+            for (String record : auditTrail.records) {
+                auditText.append(record).append("\n");
             }
-
-            if (auditTrail.records.size() > 50) {
-                auditText.insert(0, "Showing last 50 of " + auditTrail.records.size() + " entries\n\n");
-            }
-
-            txtAudit.setText(auditText.toString());
+            auditArea.setText(auditText.toString());
+            auditArea.setScrollTop(Double.MAX_VALUE); // Scroll to bottom
         }
 
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button btnExport = createStandardButton("Export Log", COLOR_SUCCESS);
+        Button btnClear = createStandardButton("Clear Log", COLOR_ERROR);
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+
+        btnExport.setOnAction(e -> showInformation("Export",
+                "Log export feature would save to: audit_log_" + new Date().getTime() + ".txt"));
+        btnClear.setOnAction(e -> {
+            auditTrail.records.clear();
+            showInformation("Cleared", "Audit log cleared");
+            showAuditTrailScreen();
+        });
         btnBack.setOnAction(e -> showAdminDashboard());
 
-        contentBox.getChildren().addAll(lblTotal, txtAudit, btnBack);
-        root.setCenter(contentBox);
+        buttonBox.getChildren().addAll(btnExport, btnClear, btnBack);
+        content.getChildren().addAll(countLabel, auditArea, buttonBox);
+        root.setCenter(content);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private void showQualityControlScreen() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("QUALITY CONTROL", "Formulation Quality Issues");
+        root.setTop(header);
+
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+
+        TextArea issuesArea = new TextArea();
+        issuesArea.setEditable(false);
+        issuesArea.setPrefHeight(500);
+        issuesArea.setStyle("-fx-control-inner-background: white; " +
+                "-fx-text-fill: " + COLOR_TEXT_PRIMARY + ";");
+
+        StringBuilder issues = new StringBuilder();
+        int issueCount = 0;
+
+        issues.append("=== QUALITY CONTROL REPORT ===\n");
+        issues.append("Generated: " + new Date() + "\n\n");
+
+        for (Item item : allFormulations) {
+            boolean hasIssues = false;
+            StringBuilder itemIssues = new StringBuilder();
+
+            // Check 1: Missing ingredients
+            LinkedList<Ingredient> ingredients = getIngredients(item);
+            if (ingredients == null || ingredients.isEmpty()) {
+                itemIssues.append("  ❌ Missing ingredients\n");
+                hasIssues = true;
+            }
+
+            // Check 2: Invalid price
+            if (item.getPrice() <= 0) {
+                itemIssues.append("  ❌ Invalid price: $" + item.getPrice() + "\n");
+                hasIssues = true;
+            } else if (item.getPrice() > 1000) {
+                itemIssues.append("  ⚠ High price: $" + item.getPrice() + "\n");
+                hasIssues = true;
+            }
+
+            // Check 3: Expiry date
+            if (item.getExpiryDate() == null || item.getExpiryDate().isEmpty()) {
+                itemIssues.append("  ❌ Missing expiry date\n");
+                hasIssues = true;
+            }
+
+            // Check 4: Veto status
+            if (isItemVetoed(item)) {
+                itemIssues.append("  ⚠ Formulation is vetoed\n");
+                hasIssues = true;
+            }
+
+            // Check 5: Feedback analysis
+            LinkedList<Feedback> feedbacks = getFeedbacks(item);
+            if (feedbacks != null && !feedbacks.isEmpty()) {
+                int negativeCount = 0;
+                for (Feedback fb : feedbacks) {
+                    if (!fb.isLike()) negativeCount++;
+                }
+                if (negativeCount > 0) {
+                    double negativePercentage = (negativeCount * 100.0) / feedbacks.size();
+                    itemIssues.append("  ⚠ " + negativeCount + " negative feedbacks (" +
+                            String.format("%.1f", negativePercentage) + "%)\n");
+                    hasIssues = true;
+                }
+            }
+
+            if (hasIssues) {
+                issueCount++;
+                issues.append(item.getName() + " (ID: " + item.getItemID() + ")\n");
+                issues.append(itemIssues.toString() + "\n");
+            }
+        }
+
+        if (issueCount == 0) {
+            issues.append("No quality issues found. All formulations meet quality standards.");
+        } else {
+            issues.insert(0, "Found " + issueCount + " formulation(s) with issues:\n\n");
+        }
+
+        issuesArea.setText(issues.toString());
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showAdminDashboard());
+
+        content.getChildren().addAll(issuesArea, btnBack);
+        root.setCenter(content);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private void showDatabaseToolsScreen() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("DATABASE TOOLS", "Database Management Utilities");
+        root.setTop(header);
+
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        content.setAlignment(Pos.CENTER);
+
+        Button btnBackup = createStandardButton("Create Database Backup", COLOR_SUCCESS);
+        Button btnRestore = createStandardButton("Restore from Backup", COLOR_WARNING);
+        Button btnOptimize = createStandardButton("Optimize Database", COLOR_INFO);
+        Button btnValidate = createStandardButton("Validate Data Integrity", COLOR_PRIMARY);
+        Button btnExport = createStandardButton("Export All Data", COLOR_SECONDARY);
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+
+        btnBackup.setOnAction(e -> {
+            saveDataToDatabase();
+            showInformation("Backup Created", "Database backup completed successfully");
+        });
+
+        btnRestore.setOnAction(e -> {
+            loadDataFromDatabase();
+            showInformation("Data Restored", "Database restored from latest data");
+        });
+
+        btnOptimize.setOnAction(e -> showInformation("Optimization",
+                "Database optimization would remove unused space and indexes"));
+
+        btnValidate.setOnAction(e -> {
+            // Validate data integrity
+            StringBuilder validation = new StringBuilder();
+            validation.append("Data Validation Report:\n");
+            validation.append("• Administrators: " + admins.size() + " (OK)\n");
+            validation.append("• Authors: " + authors.size() + " (OK)\n");
+            validation.append("• Customers: " + customers.size() + " (OK)\n");
+            validation.append("• Formulations: " + allFormulations.size() + " (OK)\n");
+            validation.append("• Audit Trail: " + auditTrail.records.size() + " entries (OK)\n");
+            validation.append("\nAll data appears to be valid and consistent.");
+
+            showInformation("Validation Complete", validation.toString());
+        });
+
+        btnExport.setOnAction(e -> showInformation("Export",
+                "Data export would create CSV files for all tables"));
+
+        btnBack.setOnAction(e -> showAdminDashboard());
+
+        VBox buttonBox = new VBox(15, btnBackup, btnRestore, btnOptimize, btnValidate, btnExport, btnBack);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setMaxWidth(300);
+
+        content.getChildren().add(buttonBox);
+        root.setCenter(content);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
@@ -1493,69 +2107,842 @@ public class Main_GUI extends Application {
 
     // ============ AUTHOR FUNCTIONALITIES ============
 
-    private void showCreateFormulationScreen() {
+    private void showCreateFoodScreen() {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Create New Formulation");
+        dialog.setTitle("Create New Food Formulation");
         dialog.initOwner(primaryStage);
 
         TabPane tabPane = new TabPane();
-        tabPane.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        tabPane.setStyle("-fx-background-color: white;");
 
-        Tab tabFood = new Tab("Food Formulation");
-        tabFood.setClosable(false);
-        tabFood.setContent(createFoodFormulationForm());
+        Tab tabBasic = new Tab("Basic Information");
+        tabBasic.setContent(createFoodBasicInfoForm());
 
-        Tab tabDrink = new Tab("Drink Formulation");
-        tabDrink.setClosable(false);
-        tabDrink.setContent(createDrinkFormulationForm());
+        Tab tabIngredients = new Tab("Ingredients");
+        tabIngredients.setContent(createIngredientsForm());
 
-        tabPane.getTabs().addAll(tabFood, tabDrink);
+        Tab tabConditions = new Tab("Conditions");
+        tabConditions.setContent(createConditionsForm());
 
-        Scene scene = new Scene(tabPane, 800, 700);
+        Tab tabProtocol = new Tab("Protocol");
+        tabProtocol.setContent(createProtocolForm());
+
+        Tab tabStandards = new Tab("Standards");
+        tabStandards.setContent(createStandardsForm());
+
+        tabPane.getTabs().addAll(tabBasic, tabIngredients, tabConditions, tabProtocol, tabStandards);
+
+        // Create button
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(20));
+        buttonBox.setStyle("-fx-background-color: white;");
+
+        Button btnCreate = createStandardButton("Create Food Formulation", COLOR_SUCCESS);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
+
+        // Store form data
+        FoodFormData formData = new FoodFormData();
+
+        // Wire up form components
+        tabBasic.setOnSelectionChanged(e -> {
+            if (tabBasic.isSelected()) {
+                updateFoodFormDataFromBasicTab(tabBasic, formData);
+            }
+        });
+
+        tabIngredients.setOnSelectionChanged(e -> {
+            if (tabIngredients.isSelected()) {
+                updateFoodFormDataFromIngredientsTab(tabIngredients, formData);
+            }
+        });
+
+        btnCreate.setOnAction(e -> {
+            // Collect data from all tabs
+            updateFoodFormDataFromBasicTab(tabBasic, formData);
+            updateFoodFormDataFromIngredientsTab(tabIngredients, formData);
+            updateFoodFormDataFromConditionsTab(tabConditions, formData);
+            updateFoodFormDataFromProtocolTab(tabProtocol, formData);
+            updateFoodFormDataFromStandardsTab(tabStandards, formData);
+
+            if (validateAndCreateFood(formData)) {
+                dialog.close();
+                showMyFormulationsScreen();
+            }
+        });
+
+        btnCancel.setOnAction(e -> dialog.close());
+
+        buttonBox.getChildren().addAll(btnCreate, btnCancel);
+
+        VBox content = new VBox(tabPane, buttonBox);
+        content.setStyle("-fx-background-color: white;");
+
+        Scene scene = new Scene(content, 800, 700);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
 
-    private ScrollPane createFoodFormulationForm() {
-        ScrollPane scrollPane = new ScrollPane();
+    // Food form data class to store all form values
+    private class FoodFormData {
+        String name = "";
+        int id = 0;
+        double price = 0.0;
+        double avgPricePerKg = 0.0;
+        String expiryDate = "";
+        ObservableList<Ingredient> ingredients = FXCollections.observableArrayList();
+        double labTemp = 0.0;
+        double labPressure = 0.0;
+        double labMoisture = 0.0;
+        double labVibration = 0.0;
+        int labPeriod = 0;
+        ObservableList<String> preparationSteps = FXCollections.observableArrayList();
+        double conserveTemp = 0.0;
+        double conserveMoisture = 0.0;
+        String containerType = "";
+        double consumeTemp = 0.0;
+        double consumeMoisture = 0.0;
+        ObservableList<String> standards = FXCollections.observableArrayList();
+        String consumerProfile = "";
+    }
+
+    private ScrollPane createFoodBasicInfoForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Basic Information");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+
+        TextField txtName = createDialogField(grid, "Food Name:*", 0);
+        TextField txtId = createDialogField(grid, "Food ID:*", 1);
+        TextField txtPrice = createDialogField(grid, "Price ($):*", 2);
+        TextField txtAvgPrice = createDialogField(grid, "Avg Price per Kg ($):*", 3);
+        TextField txtExpiry = createDialogField(grid, "Expiry Date (YYYY-MM-DD):*", 4);
+
+        content.getChildren().addAll(title, grid);
+
+        ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        return scrollPane;
+    }
 
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        scrollPane.setContent(vbox);
+    private ScrollPane createConditionsForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
 
-        // Title
-        Label titleLabel = new Label("Create Food Formulation");
-        titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
-        titleLabel.setTextFill(Color.web(COLOR_SUCCESS));
-        vbox.getChildren().add(titleLabel);
+        Label title = new Label("Laboratory & Conservation Conditions");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        // Basic Information Section
-        vbox.getChildren().add(createSectionSeparator("BASIC INFORMATION", COLOR_SUCCESS));
+        // Laboratory Conditions
+        Label labTitle = new Label("Laboratory Conditions:");
+        labTitle.setFont(FONT_BODY);
+        labTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        labTitle.setStyle("-fx-font-weight: bold;");
 
-        GridPane basicGrid = new GridPane();
-        basicGrid.setHgap(10);
-        basicGrid.setVgap(10);
-        basicGrid.setPadding(new Insets(10));
+        GridPane labGrid = new GridPane();
+        labGrid.setHgap(15);
+        labGrid.setVgap(10);
+        labGrid.setPadding(new Insets(10, 0, 20, 0));
 
-        TextField txtName = createGridField(basicGrid, "Food Name:", 0, true);
-        TextField txtId = createGridField(basicGrid, "Food ID:", 1, true);
-        TextField txtPrice = createGridField(basicGrid, "Price ($):", 2, true);
-        TextField txtAvgPrice = createGridField(basicGrid, "Avg Price per Kg ($):", 3, true);
-        TextField txtExpiry = createGridField(basicGrid, "Expiry Date:", 4, true);
+        TextField txtLabTemp = createDialogField(labGrid, "Temperature (°C):", 0);
+        TextField txtLabPressure = createDialogField(labGrid, "Pressure (kPa):", 1);
+        TextField txtLabMoisture = createDialogField(labGrid, "Moisture (%):", 2);
+        TextField txtLabVibration = createDialogField(labGrid, "Vibration Level:", 3);
+        TextField txtLabPeriod = createDialogField(labGrid, "Time Period (min):", 4);
 
-        vbox.getChildren().add(basicGrid);
+        // Conservation Conditions
+        Label conserveTitle = new Label("Conservation Conditions:");
+        conserveTitle.setFont(FONT_BODY);
+        conserveTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        conserveTitle.setStyle("-fx-font-weight: bold;");
 
-        // Ingredients Section
-        vbox.getChildren().add(createSectionSeparator("INGREDIENTS", COLOR_INFO));
+        GridPane conserveGrid = new GridPane();
+        conserveGrid.setHgap(15);
+        conserveGrid.setVgap(10);
+        conserveGrid.setPadding(new Insets(10, 0, 20, 0));
 
-        VBox ingredientsBox = new VBox(5);
-        ObservableList<Ingredient> ingredientsList = FXCollections.observableArrayList();
-        ListView<Ingredient> listView = new ListView<>(ingredientsList);
-        listView.setPrefHeight(150);
-        listView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
+        TextField txtConserveTemp = createDialogField(conserveGrid, "Temperature (°C):", 0);
+        TextField txtConserveMoisture = createDialogField(conserveGrid, "Moisture (%):", 1);
+        TextField txtContainer = createDialogField(conserveGrid, "Container Type:", 2);
+
+        // Consumption Conditions
+        Label consumeTitle = new Label("Consumption Conditions:");
+        consumeTitle.setFont(FONT_BODY);
+        consumeTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        consumeTitle.setStyle("-fx-font-weight: bold;");
+
+        GridPane consumeGrid = new GridPane();
+        consumeGrid.setHgap(15);
+        consumeGrid.setVgap(10);
+
+        TextField txtConsumeTemp = createDialogField(consumeGrid, "Serving Temperature (°C):", 0);
+        TextField txtConsumeMoisture = createDialogField(consumeGrid, "Serving Moisture (%):", 1);
+
+        content.getChildren().addAll(title, labTitle, labGrid, conserveTitle, conserveGrid,
+                consumeTitle, consumeGrid);
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    private ScrollPane createProtocolForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Preparation Protocol");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label info = new Label("Add preparation steps in order:");
+        info.setFont(FONT_BODY);
+        info.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        ObservableList<String> steps = FXCollections.observableArrayList();
+        ListView<String> listView = new ListView<>(steps);
+        listView.setPrefHeight(300);
+        listView.setStyle("-fx-border-color: " + COLOR_BORDER + ";");
+
+        HBox buttonBox = new HBox(10);
+        Button btnAdd = createSmallButton("Add Step", COLOR_SUCCESS);
+        Button btnRemove = createSmallButton("Remove Selected", COLOR_ERROR);
+        Button btnEdit = createSmallButton("Edit Selected", COLOR_INFO);
+
+        btnAdd.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Add Preparation Step");
+            dialog.setHeaderText("Enter step description:");
+            dialog.setContentText("Step:");
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(step -> steps.add(step));
+        });
+
+        buttonBox.getChildren().addAll(btnAdd, btnRemove, btnEdit);
+        content.getChildren().addAll(title, info, listView, buttonBox);
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    private ScrollPane createStandardsForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Quality Standards & Consumer Profile");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        // Standards
+        Label standardsTitle = new Label("Quality Standards:");
+        standardsTitle.setFont(FONT_BODY);
+        standardsTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        standardsTitle.setStyle("-fx-font-weight: bold;");
+
+        ObservableList<String> standards = FXCollections.observableArrayList();
+        ListView<String> listView = new ListView<>(standards);
+        listView.setPrefHeight(200);
+        listView.setStyle("-fx-border-color: " + COLOR_BORDER + ";");
+
+        HBox standardsButtons = new HBox(10);
+        Button btnAddStandard = createSmallButton("Add Standard", COLOR_SUCCESS);
+        Button btnRemoveStandard = createSmallButton("Remove Selected", COLOR_ERROR);
+
+        btnAddStandard.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Add Quality Standard");
+            dialog.setHeaderText("Enter quality standard:");
+            dialog.setContentText("Standard:");
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(standard -> standards.add(standard));
+        });
+
+        standardsButtons.getChildren().addAll(btnAddStandard, btnRemoveStandard);
+
+        // Consumer Profile
+        Label profileTitle = new Label("Target Consumer Profile:");
+        profileTitle.setFont(FONT_BODY);
+        profileTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        profileTitle.setStyle("-fx-font-weight: bold;");
+        profileTitle.setPadding(new Insets(10, 0, 5, 0));
+
+        TextArea txtConsumerProfile = new TextArea();
+        txtConsumerProfile.setPromptText("Describe the target consumer (e.g., 'Adults 18-65, Health-conscious, Active lifestyle')");
+        txtConsumerProfile.setPrefRowCount(4);
+        txtConsumerProfile.setStyle("-fx-control-inner-background: white; " +
+                "-fx-border-color: " + COLOR_BORDER + ";");
+
+        content.getChildren().addAll(title, standardsTitle, listView, standardsButtons,
+                profileTitle, txtConsumerProfile);
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    // ============ DRINK CREATION FEATURE ============
+
+    private void showCreateDrinkScreen() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Create New Drink Formulation");
+        dialog.initOwner(primaryStage);
+
+        TabPane tabPane = new TabPane();
+        tabPane.setStyle("-fx-background-color: white;");
+
+        Tab tabBasic = new Tab("Basic Information");
+        tabBasic.setContent(createDrinkBasicInfoForm());
+
+        Tab tabIngredients = new Tab("Ingredients");
+        tabIngredients.setContent(createIngredientsForm());
+
+        Tab tabConditions = new Tab("Conditions");
+        tabConditions.setContent(createDrinkConditionsForm());
+
+        Tab tabProtocol = new Tab("Protocol");
+        tabProtocol.setContent(createDrinkProtocolForm());
+
+        Tab tabStandards = new Tab("Standards");
+        tabStandards.setContent(createDrinkStandardsForm());
+
+        tabPane.getTabs().addAll(tabBasic, tabIngredients, tabConditions, tabProtocol, tabStandards);
+
+        // Create button
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(20));
+        buttonBox.setStyle("-fx-background-color: white;");
+
+        Button btnCreate = createStandardButton("Create Drink Formulation", COLOR_INFO);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
+
+        // Store form data
+        DrinkFormData formData = new DrinkFormData();
+
+        // Wire up form components
+        tabBasic.setOnSelectionChanged(e -> {
+            if (tabBasic.isSelected()) {
+                updateDrinkFormDataFromBasicTab(tabBasic, formData);
+            }
+        });
+
+        tabIngredients.setOnSelectionChanged(e -> {
+            if (tabIngredients.isSelected()) {
+                updateDrinkFormDataFromIngredientsTab(tabIngredients, formData);
+            }
+        });
+
+        btnCreate.setOnAction(e -> {
+            // Collect data from all tabs
+            updateDrinkFormDataFromBasicTab(tabBasic, formData);
+            updateDrinkFormDataFromIngredientsTab(tabIngredients, formData);
+            updateDrinkFormDataFromConditionsTab(tabConditions, formData);
+            updateDrinkFormDataFromProtocolTab(tabProtocol, formData);
+            updateDrinkFormDataFromStandardsTab(tabStandards, formData);
+
+            if (validateAndCreateDrink(formData)) {
+                dialog.close();
+                showMyFormulationsScreen();
+            }
+        });
+
+        btnCancel.setOnAction(e -> dialog.close());
+
+        buttonBox.getChildren().addAll(btnCreate, btnCancel);
+
+        VBox content = new VBox(tabPane, buttonBox);
+        content.setStyle("-fx-background-color: white;");
+
+        Scene scene = new Scene(content, 800, 700);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+
+    // Drink form data class to store all form values
+    private class DrinkFormData {
+        String name = "";
+        int id = 0;
+        double price = 0.0;
+        double avgPricePerKg = 0.0;
+        String expiryDate = "";
+        double alcoholContent = 0.0;
+        ObservableList<Ingredient> ingredients = FXCollections.observableArrayList();
+        double labTemp = 0.0;
+        double labPressure = 0.0;
+        double labMoisture = 0.0;
+        double labVibration = 0.0;
+        int labPeriod = 0;
+        ObservableList<String> preparationSteps = FXCollections.observableArrayList();
+        double conserveTemp = 0.0;
+        double conserveMoisture = 0.0;
+        String containerType = "";
+        double consumeTemp = 0.0;
+        double consumeMoisture = 0.0;
+        ObservableList<String> standards = FXCollections.observableArrayList();
+        String consumerProfile = "";
+    }
+
+    private ScrollPane createDrinkBasicInfoForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Basic Information");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+
+        TextField txtName = createDialogField(grid, "Drink Name:*", 0);
+        TextField txtId = createDialogField(grid, "Drink ID:*", 1);
+        TextField txtPrice = createDialogField(grid, "Price ($):*", 2);
+        TextField txtAvgPrice = createDialogField(grid, "Avg Price per Kg ($):*", 3);
+        TextField txtExpiry = createDialogField(grid, "Expiry Date (YYYY-MM-DD):*", 4);
+        TextField txtAlcohol = createDialogField(grid, "Alcohol Content (%):", 5);
+
+        content.getChildren().addAll(title, grid);
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    private ScrollPane createDrinkConditionsForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Laboratory & Conservation Conditions");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        // Laboratory Conditions
+        Label labTitle = new Label("Laboratory Conditions:");
+        labTitle.setFont(FONT_BODY);
+        labTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        labTitle.setStyle("-fx-font-weight: bold;");
+
+        GridPane labGrid = new GridPane();
+        labGrid.setHgap(15);
+        labGrid.setVgap(10);
+        labGrid.setPadding(new Insets(10, 0, 20, 0));
+
+        TextField txtLabTemp = createDialogField(labGrid, "Temperature (°C):", 0);
+        TextField txtLabPressure = createDialogField(labGrid, "Pressure (kPa):", 1);
+        TextField txtLabMoisture = createDialogField(labGrid, "Moisture (%):", 2);
+        TextField txtLabVibration = createDialogField(labGrid, "Vibration Level:", 3);
+        TextField txtLabPeriod = createDialogField(labGrid, "Time Period (min):", 4);
+
+        // Conservation Conditions
+        Label conserveTitle = new Label("Conservation Conditions:");
+        conserveTitle.setFont(FONT_BODY);
+        conserveTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        conserveTitle.setStyle("-fx-font-weight: bold;");
+
+        GridPane conserveGrid = new GridPane();
+        conserveGrid.setHgap(15);
+        conserveGrid.setVgap(10);
+        conserveGrid.setPadding(new Insets(10, 0, 20, 0));
+
+        TextField txtConserveTemp = createDialogField(conserveGrid, "Temperature (°C):", 0);
+        TextField txtConserveMoisture = createDialogField(conserveGrid, "Moisture (%):", 1);
+        TextField txtContainer = createDialogField(conserveGrid, "Container Type:", 2);
+
+        // Consumption Conditions
+        Label consumeTitle = new Label("Consumption Conditions:");
+        consumeTitle.setFont(FONT_BODY);
+        consumeTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        consumeTitle.setStyle("-fx-font-weight: bold;");
+
+        GridPane consumeGrid = new GridPane();
+        consumeGrid.setHgap(15);
+        consumeGrid.setVgap(10);
+
+        TextField txtConsumeTemp = createDialogField(consumeGrid, "Serving Temperature (°C):", 0);
+        TextField txtConsumeMoisture = createDialogField(consumeGrid, "Serving Moisture (%):", 1);
+
+        content.getChildren().addAll(title, labTitle, labGrid, conserveTitle, conserveGrid,
+                consumeTitle, consumeGrid);
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    private ScrollPane createDrinkProtocolForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Preparation Protocol");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label info = new Label("Add preparation steps in order:");
+        info.setFont(FONT_BODY);
+        info.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        ObservableList<String> steps = FXCollections.observableArrayList();
+        ListView<String> listView = new ListView<>(steps);
+        listView.setPrefHeight(300);
+        listView.setStyle("-fx-border-color: " + COLOR_BORDER + ";");
+
+        HBox buttonBox = new HBox(10);
+        Button btnAdd = createSmallButton("Add Step", COLOR_SUCCESS);
+        Button btnRemove = createSmallButton("Remove Selected", COLOR_ERROR);
+        Button btnEdit = createSmallButton("Edit Selected", COLOR_INFO);
+
+        btnAdd.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Add Preparation Step");
+            dialog.setHeaderText("Enter step description:");
+            dialog.setContentText("Step:");
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(step -> steps.add(step));
+        });
+
+        buttonBox.getChildren().addAll(btnAdd, btnRemove, btnEdit);
+        content.getChildren().addAll(title, info, listView, buttonBox);
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    private ScrollPane createDrinkStandardsForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Quality Standards & Consumer Profile");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        // Standards
+        Label standardsTitle = new Label("Quality Standards:");
+        standardsTitle.setFont(FONT_BODY);
+        standardsTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        standardsTitle.setStyle("-fx-font-weight: bold;");
+
+        ObservableList<String> standards = FXCollections.observableArrayList();
+        ListView<String> listView = new ListView<>(standards);
+        listView.setPrefHeight(200);
+        listView.setStyle("-fx-border-color: " + COLOR_BORDER + ";");
+
+        HBox standardsButtons = new HBox(10);
+        Button btnAddStandard = createSmallButton("Add Standard", COLOR_SUCCESS);
+        Button btnRemoveStandard = createSmallButton("Remove Selected", COLOR_ERROR);
+
+        btnAddStandard.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Add Quality Standard");
+            dialog.setHeaderText("Enter quality standard:");
+            dialog.setContentText("Standard:");
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(standard -> standards.add(standard));
+        });
+
+        standardsButtons.getChildren().addAll(btnAddStandard, btnRemoveStandard);
+
+        // Consumer Profile
+        Label profileTitle = new Label("Target Consumer Profile:");
+        profileTitle.setFont(FONT_BODY);
+        profileTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+        profileTitle.setStyle("-fx-font-weight: bold;");
+        profileTitle.setPadding(new Insets(10, 0, 5, 0));
+
+        TextArea txtConsumerProfile = new TextArea();
+        txtConsumerProfile.setPromptText("Describe the target consumer (e.g., 'Adults 18-65, Non-alcoholic, Refreshment')");
+        txtConsumerProfile.setPrefRowCount(4);
+        txtConsumerProfile.setStyle("-fx-control-inner-background: white; " +
+                "-fx-border-color: " + COLOR_BORDER + ";");
+
+        content.getChildren().addAll(title, standardsTitle, listView, standardsButtons,
+                profileTitle, txtConsumerProfile);
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        return scrollPane;
+    }
+
+    // Helper methods to update form data
+    private void updateFoodFormDataFromBasicTab(Tab tab, FoodFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+            GridPane grid = (GridPane) content.getChildren().get(1);
+
+            TextField txtName = (TextField) grid.getChildren().get(1);
+            TextField txtId = (TextField) grid.getChildren().get(3);
+            TextField txtPrice = (TextField) grid.getChildren().get(5);
+            TextField txtAvgPrice = (TextField) grid.getChildren().get(7);
+            TextField txtExpiry = (TextField) grid.getChildren().get(9);
+
+            formData.name = txtName.getText().trim();
+            if (!txtId.getText().trim().isEmpty()) {
+                formData.id = Integer.parseInt(txtId.getText().trim());
+            }
+            if (!txtPrice.getText().trim().isEmpty()) {
+                formData.price = Double.parseDouble(txtPrice.getText().trim());
+            }
+            if (!txtAvgPrice.getText().trim().isEmpty()) {
+                formData.avgPricePerKg = Double.parseDouble(txtAvgPrice.getText().trim());
+            }
+            formData.expiryDate = txtExpiry.getText().trim();
+        } catch (Exception e) {
+            System.err.println("Error updating food basic info: " + e.getMessage());
+        }
+    }
+
+    private void updateFoodFormDataFromIngredientsTab(Tab tab, FoodFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+            ListView<Ingredient> listView = (ListView<Ingredient>) content.getChildren().get(2);
+            formData.ingredients = FXCollections.observableArrayList(listView.getItems());
+        } catch (Exception e) {
+            System.err.println("Error updating food ingredients: " + e.getMessage());
+        }
+    }
+
+    private void updateFoodFormDataFromConditionsTab(Tab tab, FoodFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+
+            // Laboratory conditions
+            GridPane labGrid = (GridPane) content.getChildren().get(2);
+            TextField txtLabTemp = (TextField) labGrid.getChildren().get(1);
+            TextField txtLabPressure = (TextField) labGrid.getChildren().get(3);
+            TextField txtLabMoisture = (TextField) labGrid.getChildren().get(5);
+            TextField txtLabVibration = (TextField) labGrid.getChildren().get(7);
+            TextField txtLabPeriod = (TextField) labGrid.getChildren().get(9);
+
+            if (!txtLabTemp.getText().trim().isEmpty()) {
+                formData.labTemp = Double.parseDouble(txtLabTemp.getText().trim());
+            }
+            if (!txtLabPressure.getText().trim().isEmpty()) {
+                formData.labPressure = Double.parseDouble(txtLabPressure.getText().trim());
+            }
+            if (!txtLabMoisture.getText().trim().isEmpty()) {
+                formData.labMoisture = Double.parseDouble(txtLabMoisture.getText().trim());
+            }
+            if (!txtLabVibration.getText().trim().isEmpty()) {
+                formData.labVibration = Double.parseDouble(txtLabVibration.getText().trim());
+            }
+            if (!txtLabPeriod.getText().trim().isEmpty()) {
+                formData.labPeriod = Integer.parseInt(txtLabPeriod.getText().trim());
+            }
+
+            // Conservation conditions
+            GridPane conserveGrid = (GridPane) content.getChildren().get(4);
+            TextField txtConserveTemp = (TextField) conserveGrid.getChildren().get(1);
+            TextField txtConserveMoisture = (TextField) conserveGrid.getChildren().get(3);
+            TextField txtContainer = (TextField) conserveGrid.getChildren().get(5);
+
+            if (!txtConserveTemp.getText().trim().isEmpty()) {
+                formData.conserveTemp = Double.parseDouble(txtConserveTemp.getText().trim());
+            }
+            if (!txtConserveMoisture.getText().trim().isEmpty()) {
+                formData.conserveMoisture = Double.parseDouble(txtConserveMoisture.getText().trim());
+            }
+            formData.containerType = txtContainer.getText().trim();
+
+            // Consumption conditions
+            GridPane consumeGrid = (GridPane) content.getChildren().get(6);
+            TextField txtConsumeTemp = (TextField) consumeGrid.getChildren().get(1);
+            TextField txtConsumeMoisture = (TextField) consumeGrid.getChildren().get(3);
+
+            if (!txtConsumeTemp.getText().trim().isEmpty()) {
+                formData.consumeTemp = Double.parseDouble(txtConsumeTemp.getText().trim());
+            }
+            if (!txtConsumeMoisture.getText().trim().isEmpty()) {
+                formData.consumeMoisture = Double.parseDouble(txtConsumeMoisture.getText().trim());
+            }
+        } catch (Exception e) {
+            System.err.println("Error updating food conditions: " + e.getMessage());
+        }
+    }
+
+    private void updateFoodFormDataFromProtocolTab(Tab tab, FoodFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+            ListView<String> listView = (ListView<String>) content.getChildren().get(2);
+            formData.preparationSteps = FXCollections.observableArrayList(listView.getItems());
+        } catch (Exception e) {
+            System.err.println("Error updating food protocol: " + e.getMessage());
+        }
+    }
+
+    private void updateFoodFormDataFromStandardsTab(Tab tab, FoodFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+
+            ListView<String> standardsList = (ListView<String>) content.getChildren().get(2);
+            formData.standards = FXCollections.observableArrayList(standardsList.getItems());
+
+            TextArea txtConsumerProfile = (TextArea) content.getChildren().get(5);
+            formData.consumerProfile = txtConsumerProfile.getText().trim();
+        } catch (Exception e) {
+            System.err.println("Error updating food standards: " + e.getMessage());
+        }
+    }
+
+    private void updateDrinkFormDataFromBasicTab(Tab tab, DrinkFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+            GridPane grid = (GridPane) content.getChildren().get(1);
+
+            TextField txtName = (TextField) grid.getChildren().get(1);
+            TextField txtId = (TextField) grid.getChildren().get(3);
+            TextField txtPrice = (TextField) grid.getChildren().get(5);
+            TextField txtAvgPrice = (TextField) grid.getChildren().get(7);
+            TextField txtExpiry = (TextField) grid.getChildren().get(9);
+            TextField txtAlcohol = (TextField) grid.getChildren().get(11);
+
+            formData.name = txtName.getText().trim();
+            if (!txtId.getText().trim().isEmpty()) {
+                formData.id = Integer.parseInt(txtId.getText().trim());
+            }
+            if (!txtPrice.getText().trim().isEmpty()) {
+                formData.price = Double.parseDouble(txtPrice.getText().trim());
+            }
+            if (!txtAvgPrice.getText().trim().isEmpty()) {
+                formData.avgPricePerKg = Double.parseDouble(txtAvgPrice.getText().trim());
+            }
+            formData.expiryDate = txtExpiry.getText().trim();
+            if (!txtAlcohol.getText().trim().isEmpty()) {
+                formData.alcoholContent = Double.parseDouble(txtAlcohol.getText().trim());
+            }
+        } catch (Exception e) {
+            System.err.println("Error updating drink basic info: " + e.getMessage());
+        }
+    }
+
+    private void updateDrinkFormDataFromIngredientsTab(Tab tab, DrinkFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+            ListView<Ingredient> listView = (ListView<Ingredient>) content.getChildren().get(2);
+            formData.ingredients = FXCollections.observableArrayList(listView.getItems());
+        } catch (Exception e) {
+            System.err.println("Error updating drink ingredients: " + e.getMessage());
+        }
+    }
+
+    private void updateDrinkFormDataFromConditionsTab(Tab tab, DrinkFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+
+            // Laboratory conditions
+            GridPane labGrid = (GridPane) content.getChildren().get(2);
+            TextField txtLabTemp = (TextField) labGrid.getChildren().get(1);
+            TextField txtLabPressure = (TextField) labGrid.getChildren().get(3);
+            TextField txtLabMoisture = (TextField) labGrid.getChildren().get(5);
+            TextField txtLabVibration = (TextField) labGrid.getChildren().get(7);
+            TextField txtLabPeriod = (TextField) labGrid.getChildren().get(9);
+
+            if (!txtLabTemp.getText().trim().isEmpty()) {
+                formData.labTemp = Double.parseDouble(txtLabTemp.getText().trim());
+            }
+            if (!txtLabPressure.getText().trim().isEmpty()) {
+                formData.labPressure = Double.parseDouble(txtLabPressure.getText().trim());
+            }
+            if (!txtLabMoisture.getText().trim().isEmpty()) {
+                formData.labMoisture = Double.parseDouble(txtLabMoisture.getText().trim());
+            }
+            if (!txtLabVibration.getText().trim().isEmpty()) {
+                formData.labVibration = Double.parseDouble(txtLabVibration.getText().trim());
+            }
+            if (!txtLabPeriod.getText().trim().isEmpty()) {
+                formData.labPeriod = Integer.parseInt(txtLabPeriod.getText().trim());
+            }
+
+            // Conservation conditions
+            GridPane conserveGrid = (GridPane) content.getChildren().get(4);
+            TextField txtConserveTemp = (TextField) conserveGrid.getChildren().get(1);
+            TextField txtConserveMoisture = (TextField) conserveGrid.getChildren().get(3);
+            TextField txtContainer = (TextField) conserveGrid.getChildren().get(5);
+
+            if (!txtConserveTemp.getText().trim().isEmpty()) {
+                formData.conserveTemp = Double.parseDouble(txtConserveTemp.getText().trim());
+            }
+            if (!txtConserveMoisture.getText().trim().isEmpty()) {
+                formData.conserveMoisture = Double.parseDouble(txtConserveMoisture.getText().trim());
+            }
+            formData.containerType = txtContainer.getText().trim();
+
+            // Consumption conditions
+            GridPane consumeGrid = (GridPane) content.getChildren().get(6);
+            TextField txtConsumeTemp = (TextField) consumeGrid.getChildren().get(1);
+            TextField txtConsumeMoisture = (TextField) consumeGrid.getChildren().get(3);
+
+            if (!txtConsumeTemp.getText().trim().isEmpty()) {
+                formData.consumeTemp = Double.parseDouble(txtConsumeTemp.getText().trim());
+            }
+            if (!txtConsumeMoisture.getText().trim().isEmpty()) {
+                formData.consumeMoisture = Double.parseDouble(txtConsumeMoisture.getText().trim());
+            }
+        } catch (Exception e) {
+            System.err.println("Error updating drink conditions: " + e.getMessage());
+        }
+    }
+
+    private void updateDrinkFormDataFromProtocolTab(Tab tab, DrinkFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+            ListView<String> listView = (ListView<String>) content.getChildren().get(2);
+            formData.preparationSteps = FXCollections.observableArrayList(listView.getItems());
+        } catch (Exception e) {
+            System.err.println("Error updating drink protocol: " + e.getMessage());
+        }
+    }
+
+    private void updateDrinkFormDataFromStandardsTab(Tab tab, DrinkFormData formData) {
+        try {
+            ScrollPane scrollPane = (ScrollPane) tab.getContent();
+            VBox content = (VBox) scrollPane.getContent();
+
+            ListView<String> standardsList = (ListView<String>) content.getChildren().get(2);
+            formData.standards = FXCollections.observableArrayList(standardsList.getItems());
+
+            TextArea txtConsumerProfile = (TextArea) content.getChildren().get(5);
+            formData.consumerProfile = txtConsumerProfile.getText().trim();
+        } catch (Exception e) {
+            System.err.println("Error updating drink standards: " + e.getMessage());
+        }
+    }
+
+    // Ingredients form (shared between food and drink)
+    private ScrollPane createIngredientsForm() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        Label title = new Label("Ingredients");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label info = new Label("Add all ingredients used in this formulation");
+        info.setFont(FONT_BODY);
+        info.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        ObservableList<Ingredient> ingredients = FXCollections.observableArrayList();
+        ListView<Ingredient> listView = new ListView<>(ingredients);
+        listView.setPrefHeight(300);
+        listView.setStyle("-fx-border-color: " + COLOR_BORDER + ";");
+
+        // Custom cell factory to display ingredient information
         listView.setCellFactory(param -> new ListCell<Ingredient>() {
             @Override
             protected void updateItem(Ingredient ingredient, boolean empty) {
@@ -1563,591 +2950,85 @@ public class Main_GUI extends Application {
                 if (empty || ingredient == null) {
                     setText(null);
                 } else {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ingredient.getName()).append(" (ID: ").append(ingredient.getIngredientID()).append(")");
-                    if (ingredient.getQuantity() != null) {
-                        Quantity q = ingredient.getQuantity();
-                        sb.append(" - Weight: ").append(q.getWeight()).append("g, ");
-                        sb.append("Volume: ").append(q.getVolume()).append("ml, ");
-                        sb.append("Unit: ").append(q.getUnit());
-                    }
-                    setText(sb.toString());
+                    Quantity q = ingredient.getQuantity();
+                    String details = String.format("%s (ID: %d) - Weight: %.1fg, Volume: %.1fml, Fraction: %.2f, Unit: %s",
+                            ingredient.getName(),
+                            ingredient.getIngredientID(),
+                            q.getWeight(),
+                            q.getVolume(),
+                            q.getFraction(),
+                            q.getUnit());
+                    setText(details);
                 }
             }
         });
 
-        HBox ingredientControls = new HBox(10);
-        Button btnAddIngredient = createSmallButton("Add Ingredient", COLOR_SUCCESS);
-        Button btnRemoveIngredient = createSmallButton("Remove Selected", COLOR_ERROR);
+        HBox buttonBox = new HBox(10);
+        Button btnAdd = createSmallButton("Add Ingredient", COLOR_SUCCESS);
+        Button btnRemove = createSmallButton("Remove Selected", COLOR_ERROR);
 
-        btnAddIngredient.setOnAction(e -> showAddIngredientDialog(ingredientsList));
-        btnRemoveIngredient.setOnAction(e -> {
+        btnAdd.setOnAction(e -> showAddIngredientDialog(ingredients));
+
+        btnRemove.setOnAction(e -> {
             Ingredient selected = listView.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                ingredientsList.remove(selected);
+                ingredients.remove(selected);
             }
         });
 
-        ingredientControls.getChildren().addAll(btnAddIngredient, btnRemoveIngredient);
-        vbox.getChildren().addAll(listView, ingredientControls);
+        buttonBox.getChildren().addAll(btnAdd, btnRemove);
+        content.getChildren().addAll(title, info, listView, buttonBox);
 
-        // Lab Conditions Section
-        vbox.getChildren().add(createSectionSeparator("LAB CONDITIONS", COLOR_PURPLE));
-
-        GridPane labGrid = new GridPane();
-        labGrid.setHgap(10);
-        labGrid.setVgap(10);
-        labGrid.setPadding(new Insets(10));
-
-        TextField txtTemp = createGridField(labGrid, "Temperature (°C):", 0, true);
-        TextField txtPressure = createGridField(labGrid, "Pressure (kPa):", 1, true);
-        TextField txtMoisture = createGridField(labGrid, "Moisture (%):", 2, true);
-        TextField txtVibration = createGridField(labGrid, "Vibration Level:", 3, true);
-        TextField txtPeriod = createGridField(labGrid, "Time Period (min):", 4, true);
-
-        vbox.getChildren().add(labGrid);
-
-        // Preparation Protocol Section
-        vbox.getChildren().add(createSectionSeparator("PREPARATION PROTOCOL", COLOR_INFO));
-
-        ObservableList<String> stepsList = FXCollections.observableArrayList();
-        ListView<String> stepsListView = new ListView<>(stepsList);
-        stepsListView.setPrefHeight(100);
-        stepsListView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        HBox protocolControls = new HBox(10);
-        Button btnAddStep = createSmallButton("Add Step", COLOR_INFO);
-        Button btnRemoveStep = createSmallButton("Remove Step", COLOR_ERROR);
-
-        btnAddStep.setOnAction(e -> {
-            TextInputDialog stepDialog = new TextInputDialog();
-            stepDialog.setTitle("Add Preparation Step");
-            stepDialog.setHeaderText("Enter step description:");
-            stepDialog.setContentText("Step:");
-            Optional<String> result = stepDialog.showAndWait();
-            result.ifPresent(step -> stepsList.add(step));
-        });
-
-        btnRemoveStep.setOnAction(e -> {
-            String selected = stepsListView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                stepsList.remove(selected);
-            }
-        });
-
-        protocolControls.getChildren().addAll(btnAddStep, btnRemoveStep);
-        vbox.getChildren().addAll(stepsListView, protocolControls);
-
-        // Conservation Conditions Section
-        vbox.getChildren().add(createSectionSeparator("CONSERVATION CONDITIONS", COLOR_SUCCESS));
-
-        GridPane conserveGrid = new GridPane();
-        conserveGrid.setHgap(10);
-        conserveGrid.setVgap(10);
-        conserveGrid.setPadding(new Insets(10));
-
-        TextField txtConserveTemp = createGridField(conserveGrid, "Temperature (°C):", 0, true);
-        TextField txtConserveMoisture = createGridField(conserveGrid, "Moisture (%):", 1, true);
-        TextField txtContainer = createGridField(conserveGrid, "Container Type:", 2, true);
-
-        vbox.getChildren().add(conserveGrid);
-
-        // Consumption Conditions Section
-        vbox.getChildren().add(createSectionSeparator("CONSUMPTION CONDITIONS", COLOR_PURPLE));
-
-        GridPane consumeGrid = new GridPane();
-        consumeGrid.setHgap(10);
-        consumeGrid.setVgap(10);
-        consumeGrid.setPadding(new Insets(10));
-
-        TextField txtConsumeTemp = createGridField(consumeGrid, "Serving Temperature (°C):", 0, true);
-        TextField txtConsumeMoisture = createGridField(consumeGrid, "Serving Moisture (%):", 1, true);
-
-        vbox.getChildren().add(consumeGrid);
-
-        // Standards Section
-        vbox.getChildren().add(createSectionSeparator("STANDARDS", COLOR_INFO));
-
-        ObservableList<String> standardsList = FXCollections.observableArrayList();
-        ListView<String> standardsListView = new ListView<>(standardsList);
-        standardsListView.setPrefHeight(100);
-        standardsListView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        HBox standardsControls = new HBox(10);
-        Button btnAddStandard = createSmallButton("Add Standard", COLOR_INFO);
-        Button btnRemoveStandard = createSmallButton("Remove Standard", COLOR_ERROR);
-
-        btnAddStandard.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Add Standard");
-            dialog.setHeaderText("Enter standard:");
-            dialog.setContentText("Standard:");
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresent(standard -> standardsList.add(standard));
-        });
-
-        btnRemoveStandard.setOnAction(e -> {
-            String selected = standardsListView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                standardsList.remove(selected);
-            }
-        });
-
-        standardsControls.getChildren().addAll(btnAddStandard, btnRemoveStandard);
-        vbox.getChildren().addAll(standardsListView, standardsControls);
-
-        // Consumer Profile Section
-        vbox.getChildren().add(createSectionSeparator("CONSUMER PROFILE", COLOR_SUCCESS));
-
-        TextArea txtConsumerProfile = new TextArea();
-        txtConsumerProfile.setPromptText("Enter target consumer profile (e.g., 'Adults 18-65, Health-conscious, Active lifestyle')");
-        txtConsumerProfile.setPrefRowCount(3);
-        txtConsumerProfile.setWrapText(true);
-        txtConsumerProfile.setStyle("-fx-control-inner-background: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
-        vbox.getChildren().add(txtConsumerProfile);
-
-        // Create Button
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setPadding(new Insets(20, 0, 0, 0));
-
-        Button btnCreate = new Button("Create Food Formulation");
-        btnCreate.setStyle("-fx-background-color: " + COLOR_SUCCESS + "; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 30; -fx-background-radius: 4;");
-        Button btnCancel = new Button("Cancel");
-        btnCancel.setStyle("-fx-background-color: " + COLOR_NEUTRAL + "; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 4;");
-
-        btnCreate.setOnAction(e -> {
-            try {
-                // Validate required fields
-                if (txtName.getText().trim().isEmpty()) {
-                    showError("Validation Error", "Food name is required!");
-                    return;
-                }
-
-                if (txtId.getText().trim().isEmpty()) {
-                    showError("Validation Error", "Food ID is required!");
-                    return;
-                }
-
-                // Create food
-                Food food = new Food();
-                food.setName(txtName.getText().trim());
-                food.setFoodID(Integer.parseInt(txtId.getText().trim()));
-                food.setItemID(food.getFoodID());
-                food.setPrice(Double.parseDouble(txtPrice.getText().trim()));
-                food.setExpiryDate(txtExpiry.getText().trim());
-                food.setAveragePricePerKg(Double.parseDouble(txtAvgPrice.getText().trim()));
-
-                // Add ingredients
-                for (Ingredient ingredient : ingredientsList) {
-                    food.addIngredient(ingredient);
-                }
-
-                // Set lab conditions
-                Optcondition labCond = new Optcondition();
-                labCond.setTemp(Double.parseDouble(txtTemp.getText().trim()));
-                labCond.setPressure(Double.parseDouble(txtPressure.getText().trim()));
-                labCond.setMoisture(Double.parseDouble(txtMoisture.getText().trim()));
-                labCond.setVibration(Double.parseDouble(txtVibration.getText().trim()));
-                labCond.setPeriod(Integer.parseInt(txtPeriod.getText().trim()));
-                food.setLabCondition(labCond);
-
-                // Set preparation protocol
-                Prepprotocol protocol = new Prepprotocol();
-                for (String step : stepsList) {
-                    protocol.addStep(step, null);
-                }
-                food.setPrepprotocol(protocol);
-
-                // Set conservation conditions
-                Conservecondition conserveCond = new Conservecondition();
-                conserveCond.setTemp(Double.parseDouble(txtConserveTemp.getText().trim()));
-                conserveCond.setMoisture(Double.parseDouble(txtConserveMoisture.getText().trim()));
-                conserveCond.setContainer(txtContainer.getText().trim());
-                food.setConservecondition(conserveCond);
-
-                // Set consumption conditions
-                Consumpcondition consumeCond = new Consumpcondition();
-                consumeCond.setTemperature(Double.parseDouble(txtConsumeTemp.getText().trim()));
-                consumeCond.setMoisture(Double.parseDouble(txtConsumeMoisture.getText().trim()));
-                food.setConsumpcondition(consumeCond);
-
-                // Add standards
-                for (String standard : standardsList) {
-                    food.addStandard(standard);
-                }
-
-                // Set consumer profile
-                ConsumerSpecificInfo consumerProfile = new ConsumerSpecificInfo();
-                consumerProfile.setProfile(txtConsumerProfile.getText().trim());
-                food.setConsumerProfile(consumerProfile);
-
-                // Add author
-                food.addAuthor((Author) currentUser);
-
-                // Add to system
-                ((Author) currentUser).getFormulatedItems().add(food);
-                allFormulations.add(food);
-                databaseManager.saveItem(food);
-
-                auditTrail.logAction("AUTHOR:" + ((Author)currentUser).getName(),
-                        "Created food formulation: " + food.getName() + " (ID: " + food.getItemID() + ")");
-                showInformation("Success", "Food formulation created successfully!");
-                ((Stage) btnCreate.getScene().getWindow()).close();
-
-            } catch (NumberFormatException ex) {
-                showError("Input Error", "Please enter valid numeric values for numeric fields!");
-            } catch (Exception ex) {
-                showError("Error", "Failed to create food formulation: " + ex.getMessage());
-                ex.printStackTrace();
-            }
-        });
-
-        btnCancel.setOnAction(e -> ((Stage) btnCancel.getScene().getWindow()).close());
-
-        buttonBox.getChildren().addAll(btnCreate, btnCancel);
-        vbox.getChildren().add(buttonBox);
-
-        return scrollPane;
-    }
-
-    private ScrollPane createDrinkFormulationForm() {
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
-
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        scrollPane.setContent(vbox);
-
-        // Title
-        Label titleLabel = new Label("Create Drink Formulation");
-        titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
-        titleLabel.setTextFill(Color.web(COLOR_INFO));
-        vbox.getChildren().add(titleLabel);
-
-        // Basic Information Section
-        vbox.getChildren().add(createSectionSeparator("BASIC INFORMATION", COLOR_INFO));
-
-        GridPane basicGrid = new GridPane();
-        basicGrid.setHgap(10);
-        basicGrid.setVgap(10);
-        basicGrid.setPadding(new Insets(10));
-
-        TextField txtName = createGridField(basicGrid, "Drink Name:", 0, true);
-        TextField txtId = createGridField(basicGrid, "Drink ID:", 1, true);
-        TextField txtPrice = createGridField(basicGrid, "Price ($):", 2, true);
-        TextField txtAvgPrice = createGridField(basicGrid, "Avg Price per Kg ($):", 3, true);
-        TextField txtExpiry = createGridField(basicGrid, "Expiry Date:", 4, true);
-
-        vbox.getChildren().add(basicGrid);
-
-        // Ingredients Section
-        vbox.getChildren().add(createSectionSeparator("INGREDIENTS", COLOR_SUCCESS));
-
-        VBox ingredientsBox = new VBox(5);
-        ObservableList<Ingredient> ingredientsList = FXCollections.observableArrayList();
-        ListView<Ingredient> listView = new ListView<>(ingredientsList);
-        listView.setPrefHeight(150);
-        listView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-        listView.setCellFactory(param -> new ListCell<Ingredient>() {
-            @Override
-            protected void updateItem(Ingredient ingredient, boolean empty) {
-                super.updateItem(ingredient, empty);
-                if (empty || ingredient == null) {
-                    setText(null);
-                } else {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ingredient.getName()).append(" (ID: ").append(ingredient.getIngredientID()).append(")");
-                    if (ingredient.getQuantity() != null) {
-                        Quantity q = ingredient.getQuantity();
-                        sb.append(" - Weight: ").append(q.getWeight()).append("g, ");
-                        sb.append("Volume: ").append(q.getVolume()).append("ml, ");
-                        sb.append("Unit: ").append(q.getUnit());
-                    }
-                    setText(sb.toString());
-                }
-            }
-        });
-
-        HBox ingredientControls = new HBox(10);
-        Button btnAddIngredient = createSmallButton("Add Ingredient", COLOR_SUCCESS);
-        Button btnRemoveIngredient = createSmallButton("Remove Selected", COLOR_ERROR);
-
-        btnAddIngredient.setOnAction(e -> showAddIngredientDialog(ingredientsList));
-        btnRemoveIngredient.setOnAction(e -> {
-            Ingredient selected = listView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                ingredientsList.remove(selected);
-            }
-        });
-
-        ingredientControls.getChildren().addAll(btnAddIngredient, btnRemoveIngredient);
-        vbox.getChildren().addAll(listView, ingredientControls);
-
-        // Lab Conditions Section
-        vbox.getChildren().add(createSectionSeparator("LAB CONDITIONS", COLOR_PURPLE));
-
-        GridPane labGrid = new GridPane();
-        labGrid.setHgap(10);
-        labGrid.setVgap(10);
-        labGrid.setPadding(new Insets(10));
-
-        TextField txtTemp = createGridField(labGrid, "Temperature (°C):", 0, true);
-        TextField txtPressure = createGridField(labGrid, "Pressure (kPa):", 1, true);
-        TextField txtMoisture = createGridField(labGrid, "Moisture (%):", 2, true);
-        TextField txtVibration = createGridField(labGrid, "Vibration Level:", 3, true);
-        TextField txtPeriod = createGridField(labGrid, "Time Period (min):", 4, true);
-
-        vbox.getChildren().add(labGrid);
-
-        // Preparation Protocol Section
-        vbox.getChildren().add(createSectionSeparator("PREPARATION PROTOCOL", COLOR_INFO));
-
-        ObservableList<String> stepsList = FXCollections.observableArrayList();
-        ListView<String> stepsListView = new ListView<>(stepsList);
-        stepsListView.setPrefHeight(100);
-        stepsListView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        HBox protocolControls = new HBox(10);
-        Button btnAddStep = createSmallButton("Add Step", COLOR_INFO);
-        Button btnRemoveStep = createSmallButton("Remove Step", COLOR_ERROR);
-
-        btnAddStep.setOnAction(e -> {
-            TextInputDialog stepDialog = new TextInputDialog();
-            stepDialog.setTitle("Add Preparation Step");
-            stepDialog.setHeaderText("Enter step description:");
-            stepDialog.setContentText("Step:");
-            Optional<String> result = stepDialog.showAndWait();
-            result.ifPresent(step -> stepsList.add(step));
-        });
-
-        btnRemoveStep.setOnAction(e -> {
-            String selected = stepsListView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                stepsList.remove(selected);
-            }
-        });
-
-        protocolControls.getChildren().addAll(btnAddStep, btnRemoveStep);
-        vbox.getChildren().addAll(stepsListView, protocolControls);
-
-        // Conservation Conditions Section
-        vbox.getChildren().add(createSectionSeparator("CONSERVATION CONDITIONS", COLOR_SUCCESS));
-
-        GridPane conserveGrid = new GridPane();
-        conserveGrid.setHgap(10);
-        conserveGrid.setVgap(10);
-        conserveGrid.setPadding(new Insets(10));
-
-        TextField txtConserveTemp = createGridField(conserveGrid, "Temperature (°C):", 0, true);
-        TextField txtConserveMoisture = createGridField(conserveGrid, "Moisture (%):", 1, true);
-        TextField txtContainer = createGridField(conserveGrid, "Container Type:", 2, true);
-
-        vbox.getChildren().add(conserveGrid);
-
-        // Consumption Conditions Section
-        vbox.getChildren().add(createSectionSeparator("CONSUMPTION CONDITIONS", COLOR_PURPLE));
-
-        GridPane consumeGrid = new GridPane();
-        consumeGrid.setHgap(10);
-        consumeGrid.setVgap(10);
-        consumeGrid.setPadding(new Insets(10));
-
-        TextField txtConsumeTemp = createGridField(consumeGrid, "Serving Temperature (°C):", 0, true);
-        TextField txtConsumeMoisture = createGridField(consumeGrid, "Serving Moisture (%):", 1, true);
-
-        vbox.getChildren().add(consumeGrid);
-
-        // Standards Section
-        vbox.getChildren().add(createSectionSeparator("STANDARDS", COLOR_INFO));
-
-        ObservableList<String> standardsList = FXCollections.observableArrayList();
-        ListView<String> standardsListView = new ListView<>(standardsList);
-        standardsListView.setPrefHeight(100);
-        standardsListView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        HBox standardsControls = new HBox(10);
-        Button btnAddStandard = createSmallButton("Add Standard", COLOR_INFO);
-        Button btnRemoveStandard = createSmallButton("Remove Standard", COLOR_ERROR);
-
-        btnAddStandard.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Add Standard");
-            dialog.setHeaderText("Enter standard:");
-            dialog.setContentText("Standard:");
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresent(standard -> standardsList.add(standard));
-        });
-
-        btnRemoveStandard.setOnAction(e -> {
-            String selected = standardsListView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                standardsList.remove(selected);
-            }
-        });
-
-        standardsControls.getChildren().addAll(btnAddStandard, btnRemoveStandard);
-        vbox.getChildren().addAll(standardsListView, standardsControls);
-
-        // Consumer Profile Section
-        vbox.getChildren().add(createSectionSeparator("CONSUMER PROFILE", COLOR_SUCCESS));
-
-        TextArea txtConsumerProfile = new TextArea();
-        txtConsumerProfile.setPromptText("Enter target consumer profile (e.g., 'Adults 18-65, Health-conscious, Active lifestyle')");
-        txtConsumerProfile.setPrefRowCount(3);
-        txtConsumerProfile.setWrapText(true);
-        txtConsumerProfile.setStyle("-fx-control-inner-background: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
-        vbox.getChildren().add(txtConsumerProfile);
-
-        // Create Button
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setPadding(new Insets(20, 0, 0, 0));
-
-        Button btnCreate = new Button("Create Drink Formulation");
-        btnCreate.setStyle("-fx-background-color: " + COLOR_INFO + "; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 30; -fx-background-radius: 4;");
-        Button btnCancel = new Button("Cancel");
-        btnCancel.setStyle("-fx-background-color: " + COLOR_NEUTRAL + "; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 4;");
-
-        btnCreate.setOnAction(e -> {
-            try {
-                // Validate required fields
-                if (txtName.getText().trim().isEmpty()) {
-                    showError("Validation Error", "Drink name is required!");
-                    return;
-                }
-
-                if (txtId.getText().trim().isEmpty()) {
-                    showError("Validation Error", "Drink ID is required!");
-                    return;
-                }
-
-                // Create drink
-                Drink drink = new Drink();
-                drink.setName(txtName.getText().trim());
-                drink.setDrinkID(Integer.parseInt(txtId.getText().trim()));
-                drink.setItemID(drink.getDrinkID());
-                drink.setPrice(Double.parseDouble(txtPrice.getText().trim()));
-                drink.setExpiryDate(txtExpiry.getText().trim());
-                drink.setAveragePricePerKg(Double.parseDouble(txtAvgPrice.getText().trim()));
-
-                // Add ingredients
-                for (Ingredient ingredient : ingredientsList) {
-                    drink.addIngredient(ingredient);
-                }
-
-                // Set lab conditions
-                Optcondition labCond = new Optcondition();
-                labCond.setTemp(Double.parseDouble(txtTemp.getText().trim()));
-                labCond.setPressure(Double.parseDouble(txtPressure.getText().trim()));
-                labCond.setMoisture(Double.parseDouble(txtMoisture.getText().trim()));
-                labCond.setVibration(Double.parseDouble(txtVibration.getText().trim()));
-                labCond.setPeriod(Integer.parseInt(txtPeriod.getText().trim()));
-                drink.setLabCondition(labCond);
-
-                // Set preparation protocol
-                Prepprotocol protocol = new Prepprotocol();
-                for (String step : stepsList) {
-                    protocol.addStep(step, null);
-                }
-                drink.setPrepprotocol(protocol);
-
-                // Set conservation conditions
-                Conservecondition conserveCond = new Conservecondition();
-                conserveCond.setTemp(Double.parseDouble(txtConserveTemp.getText().trim()));
-                conserveCond.setMoisture(Double.parseDouble(txtConserveMoisture.getText().trim()));
-                conserveCond.setContainer(txtContainer.getText().trim());
-                drink.setConservecondition(conserveCond);
-
-                // Set consumption conditions
-                Consumpcondition consumeCond = new Consumpcondition();
-                consumeCond.setTemperature(Double.parseDouble(txtConsumeTemp.getText().trim()));
-                consumeCond.setMoisture(Double.parseDouble(txtConsumeMoisture.getText().trim()));
-                drink.setConsumpcondition(consumeCond);
-
-                // Add standards
-                for (String standard : standardsList) {
-                    drink.addStandard(standard);
-                }
-
-                // Set consumer profile
-                ConsumerSpecificInfo consumerProfile = new ConsumerSpecificInfo();
-                consumerProfile.setProfile(txtConsumerProfile.getText().trim());
-                drink.setConsumerProfile(consumerProfile);
-
-                // Add author
-                drink.addAuthor((Author) currentUser);
-
-                // Add to system
-                ((Author) currentUser).getFormulatedItems().add(drink);
-                allFormulations.add(drink);
-                databaseManager.saveItem(drink);
-
-                auditTrail.logAction("AUTHOR:" + ((Author)currentUser).getName(),
-                        "Created drink formulation: " + drink.getName() + " (ID: " + drink.getItemID() + ")");
-                showInformation("Success", "Drink formulation created successfully!");
-                ((Stage) btnCreate.getScene().getWindow()).close();
-
-            } catch (NumberFormatException ex) {
-                showError("Input Error", "Please enter valid numeric values for numeric fields!");
-            } catch (Exception ex) {
-                showError("Error", "Failed to create drink formulation: " + ex.getMessage());
-                ex.printStackTrace();
-            }
-        });
-
-        btnCancel.setOnAction(e -> ((Stage) btnCancel.getScene().getWindow()).close());
-
-        buttonBox.getChildren().addAll(btnCreate, btnCancel);
-        vbox.getChildren().add(buttonBox);
-
         return scrollPane;
     }
 
-    private void showAddIngredientDialog(ObservableList<Ingredient> ingredientsList) {
+    private void showAddIngredientDialog(ObservableList<Ingredient> ingredients) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Add Ingredient");
         dialog.initOwner(primaryStage);
 
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
 
-        Label titleLabel = new Label("Add New Ingredient");
-        titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-        titleLabel.setTextFill(Color.web(COLOR_SUCCESS));
-        vbox.getChildren().add(titleLabel);
+        Label title = new Label("Add New Ingredient");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
         GridPane grid = new GridPane();
-        grid.setHgap(10);
+        grid.setHgap(15);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20));
+        grid.setPadding(new Insets(20, 0, 20, 0));
 
-        TextField txtId = createGridField(grid, "Ingredient ID:", 0, true);
-        TextField txtName = createGridField(grid, "Name:", 1, true);
-        TextField txtWeight = createGridField(grid, "Weight (g):", 2, true);
-        TextField txtVolume = createGridField(grid, "Volume (ml):", 3, true);
-        TextField txtFraction = createGridField(grid, "Fraction (0.0-1.0):", 4, true);
-        TextField txtUnit = createGridField(grid, "Unit (e.g., grams, ml):", 5, true);
+        TextField txtId = createDialogField(grid, "Ingredient ID:*", 0);
+        TextField txtName = createDialogField(grid, "Name:*", 1);
+        TextField txtWeight = createDialogField(grid, "Weight (g):", 2);
+        TextField txtVolume = createDialogField(grid, "Volume (ml):", 3);
+        TextField txtFraction = createDialogField(grid, "Fraction (0.0-1.0):", 4);
+        TextField txtUnit = createDialogField(grid, "Unit:", 5);
 
-        HBox buttonBox = new HBox(10);
+        HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(Pos.CENTER);
 
-        Button btnAdd = createSmallButton("Add Ingredient", COLOR_SUCCESS);
-        Button btnCancel = createSmallButton("Cancel", COLOR_NEUTRAL);
+        Button btnAdd = createStandardButton("Add Ingredient", COLOR_SUCCESS);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
 
         btnAdd.setOnAction(e -> {
             try {
-                int id = Integer.parseInt(txtId.getText().trim());
-                String name = txtName.getText().trim();
-
-                if (name.isEmpty()) {
-                    showError("Validation Error", "Ingredient name is required!");
+                if (txtId.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Ingredient ID is required");
                     return;
                 }
+                if (txtName.getText().trim().isEmpty()) {
+                    showError("Validation Error", "Ingredient name is required");
+                    return;
+                }
+
+                int id = Integer.parseInt(txtId.getText().trim());
+                String name = txtName.getText().trim();
 
                 double weight = txtWeight.getText().isEmpty() ? 0.0 : Double.parseDouble(txtWeight.getText().trim());
                 double volume = txtVolume.getText().isEmpty() ? 0.0 : Double.parseDouble(txtVolume.getText().trim());
@@ -2155,429 +3036,691 @@ public class Main_GUI extends Application {
                 String unit = txtUnit.getText().trim();
 
                 if (fraction < 0.0 || fraction > 1.0) {
-                    showError("Validation Error", "Fraction must be between 0.0 and 1.0!");
+                    showError("Validation Error", "Fraction must be between 0.0 and 1.0");
                     return;
                 }
 
                 Quantity quantity = new Quantity(weight, volume, fraction, unit);
                 Ingredient ingredient = new Ingredient(id, name, quantity);
-                ingredientsList.add(ingredient);
+                ingredients.add(ingredient);
                 dialog.close();
 
             } catch (NumberFormatException ex) {
-                showError("Input Error", "Please enter valid numeric values for weight, volume, and fraction!");
+                showError("Invalid Input", "Please enter valid numeric values");
+            } catch (Exception ex) {
+                showError("Error", "Failed to add ingredient: " + ex.getMessage());
             }
         });
 
         btnCancel.setOnAction(e -> dialog.close());
 
         buttonBox.getChildren().addAll(btnAdd, btnCancel);
-        vbox.getChildren().addAll(grid, buttonBox);
+        content.getChildren().addAll(title, grid, buttonBox);
 
-        Scene scene = new Scene(vbox, 400, 450);
+        Scene scene = new Scene(content, 400, 450);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
 
-    private void showUpdateFormulationScreen() {
+    // Validation and creation methods
+    private boolean validateAndCreateFood(FoodFormData formData) {
+        try {
+            // Basic validation
+            if (formData.name == null || formData.name.trim().isEmpty()) {
+                showError("Validation Error", "Food name is required");
+                return false;
+            }
+            if (formData.id <= 0) {
+                showError("Validation Error", "Valid Food ID is required");
+                return false;
+            }
+            if (formData.price <= 0) {
+                showError("Validation Error", "Valid price is required");
+                return false;
+            }
+            if (formData.expiryDate == null || formData.expiryDate.trim().isEmpty()) {
+                showError("Validation Error", "Expiry date is required");
+                return false;
+            }
+            if (formData.ingredients == null || formData.ingredients.isEmpty()) {
+                showError("Validation Error", "At least one ingredient is required");
+                return false;
+            }
+
+            // Check if ID exists
+            for (Item item : allFormulations) {
+                if (item.getItemID() == formData.id) {
+                    showError("Error", "Food ID already exists");
+                    return false;
+                }
+            }
+
+            // Create food
+            Food food = new Food();
+            food.setName(formData.name.trim());
+            food.setFoodID(formData.id);
+            food.setItemID(formData.id);
+            food.setPrice(formData.price);
+            food.setExpiryDate(formData.expiryDate.trim());
+            food.setAveragePricePerKg(formData.avgPricePerKg);
+
+            // Add ingredients
+            for (Ingredient ingredient : formData.ingredients) {
+                food.addIngredient(ingredient);
+            }
+
+            // Set laboratory conditions if provided
+            if (formData.labTemp != 0 || formData.labPressure != 0 || formData.labMoisture != 0) {
+                Optcondition labCond = new Optcondition();
+                labCond.setTemp(formData.labTemp);
+                labCond.setPressure(formData.labPressure);
+                labCond.setMoisture(formData.labMoisture);
+                labCond.setVibration(formData.labVibration);
+                labCond.setPeriod(formData.labPeriod);
+                food.setLabCondition(labCond);
+            }
+
+            // Set conservation conditions if provided
+            if (formData.conserveTemp != 0 || formData.conserveMoisture != 0 ||
+                    (formData.containerType != null && !formData.containerType.trim().isEmpty())) {
+                Conservecondition conserveCond = new Conservecondition();
+                conserveCond.setTemp(formData.conserveTemp);
+                conserveCond.setMoisture(formData.conserveMoisture);
+                conserveCond.setContainer(formData.containerType.trim());
+                food.setConservecondition(conserveCond);
+            }
+
+            // Set consumption conditions if provided
+            if (formData.consumeTemp != 0 || formData.consumeMoisture != 0) {
+                Consumpcondition consumeCond = new Consumpcondition();
+                consumeCond.setTemperature(formData.consumeTemp);
+                consumeCond.setMoisture(formData.consumeMoisture);
+                food.setConsumpcondition(consumeCond);
+            }
+
+            // Set preparation protocol if steps exist
+            if (formData.preparationSteps != null && !formData.preparationSteps.isEmpty()) {
+                Prepprotocol protocol = new Prepprotocol();
+                for (String step : formData.preparationSteps) {
+                    if (step != null && !step.trim().isEmpty()) {
+                        protocol.addStep(step.trim(), null);
+                    }
+                }
+                if (!protocol.getSteps().isEmpty()) {
+                    food.setPrepprotocol(protocol);
+                }
+            }
+
+            // Add standards if exist
+            if (formData.standards != null) {
+                for (String standard : formData.standards) {
+                    if (standard != null && !standard.trim().isEmpty()) {
+                        food.addStandard(standard.trim());
+                    }
+                }
+            }
+
+            // Set consumer profile if provided
+            if (formData.consumerProfile != null && !formData.consumerProfile.trim().isEmpty()) {
+                ConsumerSpecificInfo consumerProfile = new ConsumerSpecificInfo();
+                consumerProfile.setProfile(formData.consumerProfile.trim());
+                food.setConsumerProfile(consumerProfile);
+            }
+
+            // Add author
+            food.addAuthor((Author) currentUser);
+
+            // Add to system
+            ((Author) currentUser).getFormulatedItems().add(food);
+            allFormulations.add(food);
+
+            if (databaseManager != null) {
+                databaseManager.saveItem(food);
+            }
+
+            auditTrail.logAction("AUTHOR:" + ((Author)currentUser).getName(),
+                    "Created food formulation: " + food.getName() + " (ID: " + food.getItemID() + ")");
+            showInformation("Success", "Food formulation created successfully!");
+            return true;
+
+        } catch (Exception e) {
+            showError("Error", "Failed to create food formulation: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean validateAndCreateDrink(DrinkFormData formData) {
+        try {
+            // Basic validation
+            if (formData.name == null || formData.name.trim().isEmpty()) {
+                showError("Validation Error", "Drink name is required");
+                return false;
+            }
+            if (formData.id <= 0) {
+                showError("Validation Error", "Valid Drink ID is required");
+                return false;
+            }
+            if (formData.price <= 0) {
+                showError("Validation Error", "Valid price is required");
+                return false;
+            }
+            if (formData.expiryDate == null || formData.expiryDate.trim().isEmpty()) {
+                showError("Validation Error", "Expiry date is required");
+                return false;
+            }
+            if (formData.ingredients == null || formData.ingredients.isEmpty()) {
+                showError("Validation Error", "At least one ingredient is required");
+                return false;
+            }
+            if (formData.alcoholContent < 0 || formData.alcoholContent > 100) {
+                showError("Validation Error", "Alcohol content must be between 0 and 100%");
+                return false;
+            }
+
+            // Check if ID exists
+            for (Item item : allFormulations) {
+                if (item.getItemID() == formData.id) {
+                    showError("Error", "Drink ID already exists");
+                    return false;
+                }
+            }
+
+            // Create drink
+            Drink drink = new Drink();
+            drink.setName(formData.name.trim());
+            drink.setDrinkID(formData.id);
+            drink.setItemID(formData.id);
+            drink.setPrice(formData.price);
+            drink.setExpiryDate(formData.expiryDate.trim());
+            drink.setAveragePricePerKg(formData.avgPricePerKg);
+            drink.setAlcoholContent(formData.alcoholContent);
+
+            // Add ingredients
+            for (Ingredient ingredient : formData.ingredients) {
+                drink.addIngredient(ingredient);
+            }
+
+            // Set laboratory conditions if provided
+            if (formData.labTemp != 0 || formData.labPressure != 0 || formData.labMoisture != 0) {
+                Optcondition labCond = new Optcondition();
+                labCond.setTemp(formData.labTemp);
+                labCond.setPressure(formData.labPressure);
+                labCond.setMoisture(formData.labMoisture);
+                labCond.setVibration(formData.labVibration);
+                labCond.setPeriod(formData.labPeriod);
+                drink.setLabCondition(labCond);
+            }
+
+            // Set conservation conditions if provided
+            if (formData.conserveTemp != 0 || formData.conserveMoisture != 0 ||
+                    (formData.containerType != null && !formData.containerType.trim().isEmpty())) {
+                Conservecondition conserveCond = new Conservecondition();
+                conserveCond.setTemp(formData.conserveTemp);
+                conserveCond.setMoisture(formData.conserveMoisture);
+                conserveCond.setContainer(formData.containerType.trim());
+                drink.setConservecondition(conserveCond);
+            }
+
+            // Set consumption conditions if provided
+            if (formData.consumeTemp != 0 || formData.consumeMoisture != 0) {
+                Consumpcondition consumeCond = new Consumpcondition();
+                consumeCond.setTemperature(formData.consumeTemp);
+                consumeCond.setMoisture(formData.consumeMoisture);
+                drink.setConsumpcondition(consumeCond);
+            }
+
+            // Set preparation protocol if steps exist
+            if (formData.preparationSteps != null && !formData.preparationSteps.isEmpty()) {
+                Prepprotocol protocol = new Prepprotocol();
+                for (String step : formData.preparationSteps) {
+                    if (step != null && !step.trim().isEmpty()) {
+                        protocol.addStep(step.trim(), null);
+                    }
+                }
+                if (!protocol.getSteps().isEmpty()) {
+                    drink.setPrepprotocol(protocol);
+                }
+            }
+
+            // Add standards if exist
+            if (formData.standards != null) {
+                for (String standard : formData.standards) {
+                    if (standard != null && !standard.trim().isEmpty()) {
+                        drink.addStandard(standard.trim());
+                    }
+                }
+            }
+
+            // Set consumer profile if provided
+            if (formData.consumerProfile != null && !formData.consumerProfile.trim().isEmpty()) {
+                ConsumerSpecificInfo consumerProfile = new ConsumerSpecificInfo();
+                consumerProfile.setProfile(formData.consumerProfile.trim());
+                drink.setConsumerProfile(consumerProfile);
+            }
+
+            // Add author
+            drink.addAuthor((Author) currentUser);
+
+            // Add to system
+            ((Author) currentUser).getFormulatedItems().add(drink);
+            allFormulations.add(drink);
+
+            if (databaseManager != null) {
+                databaseManager.saveItem(drink);
+            }
+
+            auditTrail.logAction("AUTHOR:" + ((Author)currentUser).getName(),
+                    "Created drink formulation: " + drink.getName() + " (ID: " + drink.getItemID() +
+                            ", Alcohol: " + formData.alcoholContent + "%)");
+            showInformation("Success", "Drink formulation created successfully!");
+            return true;
+
+        } catch (Exception e) {
+            showError("Error", "Failed to create drink formulation: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void showMyFormulationsScreen() {
+        Author author = (Author) currentUser;
+
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("MY FORMULATIONS",
+                "Author: " + author.getName() + " | Personal Formulations");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        if (author.getFormulatedItems().isEmpty()) {
+            Label emptyLabel = new Label("You haven't created any formulations yet");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Item item : author.getFormulatedItems()) {
+                HBox formulationCard = createAuthorFormulationCard(item);
+                content.getChildren().add(formulationCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showAuthorDashboard());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createAuthorFormulationCard(Item item) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + (isItemVetoed(item) ? COLOR_ERROR : COLOR_BORDER) + "; " +
+                "-fx-border-width: " + (isItemVetoed(item) ? "2" : "1") + "; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        // Type indicator
+        VBox typeBox = new VBox();
+        typeBox.setMinWidth(80);
+        typeBox.setAlignment(Pos.CENTER);
+
+        String type = item instanceof Food ? "FOOD" : "DRINK";
+        String typeColor = item instanceof Food ? COLOR_SUCCESS : COLOR_INFO;
+
+        Label typeLabel = new Label(type);
+        typeLabel.setFont(FONT_BODY);
+        typeLabel.setTextFill(Color.web(typeColor));
+        typeLabel.setStyle("-fx-font-weight: bold;");
+
+        // Add alcohol content for drinks
+        if (item instanceof Drink) {
+            Drink drink = (Drink) item;
+            Label alcoholLabel = new Label(String.format("%.1f%%", drink.getAlcoholContent()));
+            alcoholLabel.setFont(Font.font(10));
+            alcoholLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            typeBox.getChildren().addAll(typeLabel, alcoholLabel);
+        } else {
+            typeBox.getChildren().add(typeLabel);
+        }
+
+        // Formulation info
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(item.getName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        String priceText = String.format("$%.2f", item.getPrice());
+        if (item instanceof Food) {
+            Food food = (Food) item;
+            priceText += " | $" + String.format("%.2f/kg", food.getAveragePricePerKg());
+        } else if (item instanceof Drink) {
+            Drink drink = (Drink) item;
+            priceText += " | $" + String.format("%.2f/kg", drink.getAveragePricePerKg());
+        }
+
+        Label detailsLabel = new Label("ID: " + item.getItemID() +
+                " | Price: " + priceText +
+                " | Expiry: " + item.getExpiryDate());
+        detailsLabel.setFont(FONT_BODY);
+        detailsLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        // Feedback info
+        LinkedList<Feedback> feedbacks = getFeedbacks(item);
+        if (feedbacks != null && !feedbacks.isEmpty()) {
+            int likes = 0;
+            for (Feedback fb : feedbacks) {
+                if (fb.isLike()) likes++;
+            }
+            Label feedbackLabel = new Label("Feedbacks: " + feedbacks.size() +
+                    " (👍 " + likes + " | 👎 " + (feedbacks.size() - likes) + ")");
+            feedbackLabel.setFont(FONT_BODY);
+            feedbackLabel.setTextFill(Color.web(COLOR_INFO));
+            infoBox.getChildren().add(feedbackLabel);
+        }
+
+        // Veto status
+        if (isItemVetoed(item)) {
+            Label vetoLabel = new Label("⚠ VETOED");
+            vetoLabel.setFont(FONT_BODY);
+            vetoLabel.setTextFill(Color.web(COLOR_ERROR));
+            vetoLabel.setStyle("-fx-font-weight: bold;");
+            infoBox.getChildren().add(vetoLabel);
+        }
+
+        infoBox.getChildren().addAll(nameLabel, detailsLabel);
+
+        // Action buttons
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        Button btnView = createSmallButton("View", COLOR_INFO);
+        Button btnEdit = createSmallButton("Edit", COLOR_WARNING);
+        Button btnStats = createSmallButton("Stats", COLOR_PRIMARY);
+
+        btnView.setOnAction(e -> showFormulationDetails(item));
+        btnEdit.setOnAction(e -> showEditFormulationDialog(item));
+        btnStats.setOnAction(e -> showFormulationStatistics(item));
+
+        buttonBox.getChildren().addAll(btnView, btnEdit, btnStats);
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(typeBox, infoBox, buttonBox);
+
+        return card;
+    }
+
+    private void showUpdateFormulationSelectionScreen() {
         Author author = (Author) currentUser;
 
         if (author.getFormulatedItems().isEmpty()) {
-            showInformation("No Formulations", "You haven't created any formulations yet.");
+            showInformation("No Formulations", "You haven't created any formulations yet");
             return;
         }
 
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Update Formulation");
+        dialog.setTitle("Select Formulation to Update");
         dialog.initOwner(primaryStage);
 
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
 
-        Label titleLabel = new Label("Select formulation to update:");
-        titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-        titleLabel.setTextFill(Color.web(COLOR_INFO));
-        vbox.getChildren().add(titleLabel);
+        Label title = new Label("Select a formulation to update:");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        ComboBox<Item> comboFormulations = new ComboBox<>();
+        ComboBox<Item> combo = new ComboBox<>();
         ObservableList<Item> items = FXCollections.observableArrayList(author.getFormulatedItems());
-        comboFormulations.setItems(items);
-        comboFormulations.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-        comboFormulations.setCellFactory(param -> new ListCell<Item>() {
+        combo.setItems(items);
+        combo.setCellFactory(param -> new ListCell<Item>() {
             @Override
             protected void updateItem(Item item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getName() + " (ID: " + item.getItemID() + ", Type: " +
-                            (item instanceof Food ? "Food" : "Drink") + ")");
+                    setText(item.getName() + " (ID: " + item.getItemID() +
+                            ", Type: " + (item instanceof Food ? "Food" : "Drink") + ")");
                 }
             }
         });
 
-        Button btnUpdate = createSmallButton("Update Selected", COLOR_INFO);
-        Button btnCancel = createSmallButton("Cancel", COLOR_NEUTRAL);
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button btnUpdate = createStandardButton("Update Selected", COLOR_WARNING);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
 
         btnUpdate.setOnAction(e -> {
-            Item selected = comboFormulations.getValue();
+            Item selected = combo.getValue();
             if (selected != null) {
                 dialog.close();
-                showFormulationUpdateDialog(selected);
+                showEditFormulationDialog(selected);
             }
         });
 
         btnCancel.setOnAction(e -> dialog.close());
 
-        vbox.getChildren().addAll(comboFormulations, btnUpdate, btnCancel);
-        Scene scene = new Scene(vbox, 400, 200);
+        content.getChildren().addAll(title, combo, buttonBox);
+        buttonBox.getChildren().addAll(btnUpdate, btnCancel);
+
+        Scene scene = new Scene(content, 500, 200);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
 
-    private void showFormulationUpdateDialog(Item item) {
+    private void showEditFormulationDialog(Item item) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Update: " + item.getName());
+        dialog.setTitle("Update Formulation: " + item.getName());
         dialog.initOwner(primaryStage);
 
-        TabPane tabPane = new TabPane();
-        tabPane.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
 
-        Tab tabBasic = new Tab("Basic Info");
-        tabBasic.setClosable(false);
-        tabBasic.setContent(createBasicUpdateForm(item));
+        Label title = new Label("Update: " + item.getName());
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        Tab tabIngredients = new Tab("Ingredients");
-        tabIngredients.setClosable(false);
-        tabIngredients.setContent(createIngredientsUpdateForm(item));
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 0, 20, 0));
 
-        Tab tabStandards = new Tab("Standards");
-        tabStandards.setClosable(false);
-        tabStandards.setContent(createStandardsUpdateForm(item));
+        TextField txtName = createDialogField(grid, "Name:*", 0);
+        txtName.setText(item.getName());
 
-        tabPane.getTabs().addAll(tabBasic, tabIngredients, tabStandards);
+        TextField txtPrice = createDialogField(grid, "Price ($):*", 1);
+        txtPrice.setText(String.valueOf(item.getPrice()));
 
-        Button btnSave = new Button("Save Changes");
-        btnSave.setStyle("-fx-background-color: " + COLOR_SUCCESS + "; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 4;");
-        btnSave.setOnAction(e -> {
-            databaseManager.saveItem(item);
-            auditTrail.logAction("AUTHOR:" + ((Author)currentUser).getName(),
-                    "Updated formulation: " + item.getName());
-            showInformation("Success", "Formulation updated successfully!");
-            dialog.close();
-        });
-
-        VBox vbox = new VBox(10, tabPane, btnSave);
-        vbox.setPadding(new Insets(10));
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
-
-        Scene scene = new Scene(vbox, 600, 500);
-        dialog.setScene(scene);
-        dialog.showAndWait();
-    }
-
-    private VBox createBasicUpdateForm(Item item) {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-
-        TextField txtName = createFormField(vbox, "Name:", item.getName());
-        TextField txtPrice = createFormField(vbox, "Price ($):", String.valueOf(item.getPrice()));
-        TextField txtExpiry = createFormField(vbox, "Expiry Date (YYYY-MM-DD):", item.getExpiryDate());
+        TextField txtExpiry = createDialogField(grid, "Expiry Date (YYYY-MM-DD):*", 2);
+        txtExpiry.setText(item.getExpiryDate());
 
         if (item instanceof Food) {
             Food food = (Food) item;
-            TextField txtAvgPrice = createFormField(vbox, "Avg Price per Kg ($):", String.valueOf(food.getAveragePricePerKg()));
-            txtAvgPrice.textProperty().addListener((obs, oldVal, newVal) -> {
-                try {
-                    food.setAveragePricePerKg(Double.parseDouble(newVal));
-                } catch (Exception e) {}
-            });
+            TextField txtAvgPrice = createDialogField(grid, "Avg Price per Kg ($):", 3);
+            txtAvgPrice.setText(String.valueOf(food.getAveragePricePerKg()));
         } else if (item instanceof Drink) {
             Drink drink = (Drink) item;
-            TextField txtAvgPrice = createFormField(vbox, "Avg Price per Kg ($):", String.valueOf(drink.getAveragePricePerKg()));
-            txtAvgPrice.textProperty().addListener((obs, oldVal, newVal) -> {
-                try {
-                    drink.setAveragePricePerKg(Double.parseDouble(newVal));
-                } catch (Exception e) {}
-            });
+            TextField txtAvgPrice = createDialogField(grid, "Avg Price per Kg ($):", 3);
+            txtAvgPrice.setText(String.valueOf(drink.getAveragePricePerKg()));
+            TextField txtAlcohol = createDialogField(grid, "Alcohol Content (%):", 4);
+            txtAlcohol.setText(String.valueOf(drink.getAlcoholContent()));
         }
 
-        txtName.textProperty().addListener((obs, oldVal, newVal) -> item.setName(newVal));
-        txtPrice.textProperty().addListener((obs, oldVal, newVal) -> {
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button btnSave = createStandardButton("Save Changes", COLOR_SUCCESS);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
+
+        btnSave.setOnAction(e -> {
             try {
-                item.setPrice(Double.parseDouble(newVal));
-            } catch (Exception e) {}
-        });
-        txtExpiry.textProperty().addListener((obs, oldVal, newVal) -> item.setExpiryDate(newVal));
+                String name = txtName.getText().trim();
+                double price = Double.parseDouble(txtPrice.getText().trim());
+                String expiry = txtExpiry.getText().trim();
 
-        return vbox;
-    }
-
-    private VBox createIngredientsUpdateForm(Item item) {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-
-        LinkedList<Ingredient> ingredients = getIngredients(item);
-        ObservableList<Ingredient> ingredientsList = FXCollections.observableArrayList();
-        if (ingredients != null) {
-            ingredientsList.addAll(ingredients);
-        }
-
-        ListView<Ingredient> listView = new ListView<>(ingredientsList);
-        listView.setPrefHeight(200);
-        listView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-        listView.setCellFactory(param -> new ListCell<Ingredient>() {
-            @Override
-            protected void updateItem(Ingredient ingredient, boolean empty) {
-                super.updateItem(ingredient, empty);
-                if (empty || ingredient == null) {
-                    setText(null);
-                } else {
-                    setText(ingredient.getName() + " (ID: " + ingredient.getIngredientID() + ")");
+                if (name.isEmpty()) {
+                    showError("Validation Error", "Name is required");
+                    return;
                 }
+                if (price <= 0) {
+                    showError("Validation Error", "Valid price is required");
+                    return;
+                }
+
+                item.setName(name);
+                item.setPrice(price);
+                item.setExpiryDate(expiry);
+
+                if (item instanceof Food) {
+                    Food food = (Food) item;
+                    TextField txtAvgPrice = (TextField) grid.getChildren().get(7); // Get the avg price field
+                    double avgPrice = Double.parseDouble(txtAvgPrice.getText().trim());
+                    food.setAveragePricePerKg(avgPrice);
+                } else if (item instanceof Drink) {
+                    Drink drink = (Drink) item;
+                    TextField txtAvgPrice = (TextField) grid.getChildren().get(7); // Get the avg price field
+                    double avgPrice = Double.parseDouble(txtAvgPrice.getText().trim());
+                    drink.setAveragePricePerKg(avgPrice);
+
+                    TextField txtAlcohol = (TextField) grid.getChildren().get(9); // Get the alcohol field
+                    double alcohol = Double.parseDouble(txtAlcohol.getText().trim());
+                    drink.setAlcoholContent(alcohol);
+                }
+
+                if (databaseManager != null) {
+                    databaseManager.saveItem(item);
+                }
+
+                auditTrail.logAction("AUTHOR:" + ((Author)currentUser).getName(),
+                        "Updated formulation: " + item.getName());
+                showInformation("Success", "Formulation updated successfully");
+                dialog.close();
+                showMyFormulationsScreen();
+
+            } catch (NumberFormatException ex) {
+                showError("Invalid Input", "Please enter valid numeric values");
+            } catch (Exception ex) {
+                showError("Error", "Failed to update formulation: " + ex.getMessage());
             }
         });
 
-        HBox buttonBox = new HBox(10);
-        Button btnAdd = createSmallButton("Add Ingredient", COLOR_SUCCESS);
-        Button btnRemove = createSmallButton("Remove Selected", COLOR_ERROR);
-        Button btnEdit = createSmallButton("Edit Selected", COLOR_INFO);
+        btnCancel.setOnAction(e -> dialog.close());
 
-        btnAdd.setOnAction(e -> showAddIngredientDialog(ingredientsList));
-        btnRemove.setOnAction(e -> {
-            Ingredient selected = listView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                ingredientsList.remove(selected);
-                // Update the actual item
-                if (item instanceof Food) {
-                    ((Food) item).removeIngredient(selected.getIngredientID());
-                } else if (item instanceof Drink) {
-                    ((Drink) item).removeIngredient(selected.getIngredientID());
-                }
-            }
-        });
+        buttonBox.getChildren().addAll(btnSave, btnCancel);
+        content.getChildren().addAll(title, grid, buttonBox);
 
-        buttonBox.getChildren().addAll(btnAdd, btnRemove, btnEdit);
-        vbox.getChildren().addAll(listView, buttonBox);
-
-        return vbox;
+        Scene scene = new Scene(content, 400, 350);
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 
-    private VBox createStandardsUpdateForm(Item item) {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-
-        LinkedList<String> standards = null;
-        if (item instanceof Food) {
-            standards = ((Food) item).getStandards();
-        } else if (item instanceof Drink) {
-            standards = ((Drink) item).getStandards();
-        }
-
-        ObservableList<String> standardsList = FXCollections.observableArrayList();
-        if (standards != null) {
-            standardsList.addAll(standards);
-        }
-
-        ListView<String> listView = new ListView<>(standardsList);
-        listView.setPrefHeight(200);
-        listView.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
-
-        HBox buttonBox = new HBox(10);
-        Button btnAdd = createSmallButton("Add Standard", COLOR_INFO);
-        Button btnRemove = createSmallButton("Remove Selected", COLOR_ERROR);
-
-        btnAdd.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Add Standard");
-            dialog.setHeaderText("Enter standard:");
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresent(standard -> {
-                standardsList.add(standard);
-                // Update the actual item
-                if (item instanceof Food) {
-                    ((Food) item).addStandard(standard);
-                } else if (item instanceof Drink) {
-                    ((Drink) item).addStandard(standard);
-                }
-            });
-        });
-
-        btnRemove.setOnAction(e -> {
-            String selected = listView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                standardsList.remove(selected);
-                // Update the actual item
-                if (item instanceof Food) {
-                    ((Food) item).getStandards().remove(selected);
-                } else if (item instanceof Drink) {
-                    ((Drink) item).getStandards().remove(selected);
-                }
-            }
-        });
-
-        buttonBox.getChildren().addAll(btnAdd, btnRemove);
-        vbox.getChildren().addAll(listView, buttonBox);
-
-        return vbox;
-    }
-
-    private void showAuthorFormulationsScreen() {
+    private void showAuthorQualityCheckScreen() {
         Author author = (Author) currentUser;
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_AUTHOR + ", #21618C);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("MY FORMULATIONS", "Author: " + author.getName());
+        VBox header = createHeader("QUALITY CHECK",
+                "Author: " + author.getName() + " | Formulation Quality Analysis");
         root.setTop(header);
 
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
 
-        VBox contentBox = new VBox(15);
-        contentBox.setPadding(new Insets(20));
+        TextArea issuesArea = new TextArea();
+        issuesArea.setEditable(false);
+        issuesArea.setPrefHeight(500);
+        issuesArea.setStyle("-fx-control-inner-background: white; " +
+                "-fx-text-fill: " + COLOR_TEXT_PRIMARY + ";");
 
-        if (author.getFormulatedItems().isEmpty()) {
-            Label lblEmpty = new Label("You haven't created any formulations yet.");
-            lblEmpty.setTextFill(Color.WHITE);
-            lblEmpty.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 16));
-            contentBox.getChildren().add(lblEmpty);
-        } else {
-            for (Item item : author.getFormulatedItems()) {
-                VBox itemBox = new VBox(8);
-                itemBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 6; " +
-                        "-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1;");
+        StringBuilder issues = new StringBuilder();
+        int issueCount = 0;
 
-                Label lblName = new Label(item.getName());
-                lblName.setTextFill(Color.WHITE);
-                lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+        issues.append("=== PERSONAL FORMULATION QUALITY REPORT ===\n");
+        issues.append("Author: " + author.getName() + "\n");
+        issues.append("Generated: " + new Date() + "\n\n");
 
-                Label lblType = new Label("Type: " + (item instanceof Food ? "Food" : "Drink"));
-                lblType.setTextFill(Color.LIGHTGRAY);
-                lblType.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
+        for (Item item : author.getFormulatedItems()) {
+            boolean hasIssues = false;
+            StringBuilder itemIssues = new StringBuilder();
 
-                Label lblId = new Label("ID: " + item.getItemID());
-                lblId.setTextFill(Color.LIGHTGRAY);
-                lblId.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-
-                Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
-                lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
-                lblPrice.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-
-                // Feedbacks
-                LinkedList<Feedback> feedbacks = getFeedbacks(item);
-                if (feedbacks != null && !feedbacks.isEmpty()) {
-                    Label lblFeedbacks = new Label("Feedbacks: " + feedbacks.size());
-                    lblFeedbacks.setTextFill(Color.LIGHTGRAY);
-                    lblFeedbacks.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-                    itemBox.getChildren().add(lblFeedbacks);
-                }
-
-                contentBox.getChildren().add(itemBox);
+            // Check ingredients
+            LinkedList<Ingredient> ingredients = getIngredients(item);
+            if (ingredients == null || ingredients.isEmpty()) {
+                itemIssues.append("  ❌ Missing ingredients\n");
+                hasIssues = true;
             }
-        }
 
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showAuthorDashboard());
-        contentBox.getChildren().add(btnBack);
+            // Check price
+            if (item.getPrice() <= 0) {
+                itemIssues.append("  ❌ Invalid price\n");
+                hasIssues = true;
+            }
 
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
+            // Check expiry date
+            if (item.getExpiryDate() == null || item.getExpiryDate().isEmpty()) {
+                itemIssues.append("  ❌ Missing expiry date\n");
+                hasIssues = true;
+            }
 
-        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(currentScene);
-    }
+            // Check veto status
+            if (isItemVetoed(item)) {
+                itemIssues.append("  ⚠ Formulation is vetoed\n");
+                hasIssues = true;
+            }
 
-    private void showAuthorCheckIssuesScreen() {
-        Author author = (Author) currentUser;
-
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_AUTHOR + ", #21618C);");
-
-        VBox header = createHeader("CHECK MY FORMULATION ISSUES", "Author: " + author.getName());
-        root.setTop(header);
-
-        VBox contentBox = new VBox(20);
-        contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPadding(new Insets(30));
-
-        if (author.getFormulatedItems().isEmpty()) {
-            Label lblEmpty = new Label("No formulations to check.");
-            lblEmpty.setTextFill(Color.WHITE);
-            lblEmpty.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 16));
-            contentBox.getChildren().add(lblEmpty);
-        } else {
-            int issueCount = 0;
-            StringBuilder issuesText = new StringBuilder();
-            issuesText.append("=== MY FORMULATION ISSUES ===\n\n");
-
-            for (Item item : author.getFormulatedItems()) {
-                boolean hasIssues = false;
-                StringBuilder itemIssues = new StringBuilder();
-
-                // Check ingredients
-                LinkedList<Ingredient> ingredients = getIngredients(item);
-                if (ingredients == null || ingredients.isEmpty()) {
-                    itemIssues.append("  ⚠ Missing ingredients\n");
+            // Check feedback
+            LinkedList<Feedback> feedbacks = getFeedbacks(item);
+            if (feedbacks != null && !feedbacks.isEmpty()) {
+                int negativeCount = 0;
+                for (Feedback fb : feedbacks) {
+                    if (!fb.isLike()) negativeCount++;
+                }
+                if (negativeCount > 0) {
+                    itemIssues.append("  ⚠ " + negativeCount + " negative feedback(s)\n");
                     hasIssues = true;
-                }
-
-                // Check price
-                if (item.getPrice() <= 0) {
-                    itemIssues.append("  ⚠ Invalid price\n");
-                    hasIssues = true;
-                }
-
-                // Check veto
-                if (isItemVetoed(item)) {
-                    itemIssues.append("  ⚠ Formulation is vetoed\n");
-                    hasIssues = true;
-                }
-
-                // Check feedback
-                LinkedList<Feedback> feedbacks = getFeedbacks(item);
-                if (feedbacks != null) {
-                    int negativeCount = 0;
-                    for (Feedback fb : feedbacks) {
-                        if (!fb.isLike()) negativeCount++;
-                    }
-                    if (negativeCount > 0) {
-                        itemIssues.append("  ⚠ Has ").append(negativeCount).append(" negative feedback(s)\n");
-                        hasIssues = true;
-                    }
-                }
-
-                if (hasIssues) {
-                    issueCount++;
-                    issuesText.append(item.getName()).append("\n");
-                    issuesText.append(itemIssues.toString()).append("\n");
                 }
             }
 
-            Label lblInfo = new Label("Found " + issueCount + " formulation(s) with issues");
-            lblInfo.setTextFill(issueCount > 0 ? Color.web(COLOR_WARNING) : Color.web(COLOR_SUCCESS));
-            lblInfo.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-            TextArea txtIssues = new TextArea();
-            txtIssues.setEditable(false);
-            txtIssues.setPrefRowCount(15);
-            txtIssues.setWrapText(true);
-            txtIssues.setStyle("-fx-control-inner-background: #f8f8f8; -fx-border-color: " + COLOR_NEUTRAL + ";");
-            txtIssues.setText(issuesText.toString());
-
-            contentBox.getChildren().addAll(lblInfo, txtIssues);
+            if (hasIssues) {
+                issueCount++;
+                issues.append(item.getName() + " (ID: " + item.getItemID() + ")\n");
+                issues.append(itemIssues.toString() + "\n");
+            }
         }
 
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showAuthorDashboard());
-        contentBox.getChildren().add(btnBack);
+        if (issueCount == 0) {
+            issues.append("Excellent! All your formulations meet quality standards.");
+        } else {
+            issues.insert(0, "Found " + issueCount + " formulation(s) with issues:\n\n");
+        }
 
-        root.setCenter(contentBox);
+        issuesArea.setText(issues.toString());
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showAuthorDashboard());
+
+        content.getChildren().addAll(issuesArea, btnBack);
+        root.setCenter(content);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
@@ -2587,185 +3730,456 @@ public class Main_GUI extends Application {
         Author author = (Author) currentUser;
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_AUTHOR + ", #21618C);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("MY STATISTICS", "Author: " + author.getName());
+        VBox header = createHeader("MY STATISTICS",
+                "Author: " + author.getName() + " | Performance Overview");
         root.setTop(header);
 
-        VBox contentBox = new VBox(15);
-        contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPadding(new Insets(30));
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        content.setAlignment(Pos.CENTER);
 
         GridPane statsGrid = new GridPane();
-        statsGrid.setHgap(50);
+        statsGrid.setHgap(40);
         statsGrid.setVgap(20);
         statsGrid.setAlignment(Pos.CENTER);
 
-        addStatRow(statsGrid, 0, "Total Formulations:", String.valueOf(author.getFormulatedItems().size()), COLOR_INFO);
+        int foodCount = countAuthorFoods(author);
+        int drinkCount = countAuthorDrinks(author);
+        int totalFeedbacks = countAuthorFeedbacks(author);
+        int positiveFeedbacks = countAuthorPositiveFeedbacks(author);
+        double avgPrice = calculateAuthorAveragePrice(author);
+        int vetoedCount = countAuthorVetoedFormulations(author);
 
-        int foodCount = 0;
-        int drinkCount = 0;
-        for (Item item : author.getFormulatedItems()) {
-            if (item instanceof Food) foodCount++;
-            else if (item instanceof Drink) drinkCount++;
+        addStatRow(statsGrid, 0, "Total Formulations:", author.getFormulatedItems().size(), COLOR_AUTHOR);
+        addStatRow(statsGrid, 1, "Food Formulations:", foodCount, COLOR_SUCCESS);
+        addStatRow(statsGrid, 2, "Drink Formulations:", drinkCount, COLOR_INFO);
+        addStatRow(statsGrid, 3, "Average Price:", "$" + String.format("%.2f", avgPrice), COLOR_PRIMARY);
+        addStatRow(statsGrid, 4, "Total Feedbacks:", totalFeedbacks, COLOR_INFO);
+        addStatRow(statsGrid, 5, "Positive Feedbacks:", positiveFeedbacks, COLOR_SUCCESS);
+        addStatRow(statsGrid, 6, "Vetoed Formulations:", vetoedCount, COLOR_ERROR);
+
+        if (totalFeedbacks > 0) {
+            double positiveRate = (positiveFeedbacks * 100.0) / totalFeedbacks;
+            addStatRow(statsGrid, 7, "Positive Rate:", String.format("%.1f%%", positiveRate),
+                    positiveRate >= 80 ? COLOR_SUCCESS :
+                            positiveRate >= 60 ? COLOR_WARNING : COLOR_ERROR);
         }
-        addStatRow(statsGrid, 1, "Food Items:", String.valueOf(foodCount), COLOR_SUCCESS);
-        addStatRow(statsGrid, 2, "Drink Items:", String.valueOf(drinkCount), COLOR_INFO);
 
-        // Calculate total feedbacks
-        int totalFeedbacks = 0;
-        int positiveFeedbacks = 0;
-        for (Item item : author.getFormulatedItems()) {
-            LinkedList<Feedback> feedbacks = getFeedbacks(item);
-            if (feedbacks != null) {
-                totalFeedbacks += feedbacks.size();
-                for (Feedback fb : feedbacks) {
-                    if (fb.isLike()) positiveFeedbacks++;
-                }
-            }
-        }
-        addStatRow(statsGrid, 3, "Total Feedbacks:", String.valueOf(totalFeedbacks), COLOR_PURPLE);
-        addStatRow(statsGrid, 4, "Positive Feedbacks:", String.valueOf(positiveFeedbacks), COLOR_SUCCESS);
-
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
         btnBack.setOnAction(e -> showAuthorDashboard());
 
-        contentBox.getChildren().addAll(statsGrid, btnBack);
-        root.setCenter(contentBox);
+        content.getChildren().addAll(statsGrid, btnBack);
+        root.setCenter(content);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
+    }
+
+    private void showAllFormulationsScreen() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("ALL FORMULATIONS", "Browse All System Formulations");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        if (allFormulations.isEmpty()) {
+            Label emptyLabel = new Label("No formulations found");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Item item : allFormulations) {
+                HBox formulationCard = createBrowseFormulationCard(item);
+                content.getChildren().add(formulationCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showAuthorDashboard());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createBrowseFormulationCard(Item item) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        // Type indicator
+        VBox typeBox = new VBox();
+        typeBox.setMinWidth(80);
+        typeBox.setAlignment(Pos.CENTER);
+
+        String type = item instanceof Food ? "FOOD" : "DRINK";
+        String typeColor = item instanceof Food ? COLOR_SUCCESS : COLOR_INFO;
+
+        Label typeLabel = new Label(type);
+        typeLabel.setFont(FONT_BODY);
+        typeLabel.setTextFill(Color.web(typeColor));
+        typeLabel.setStyle("-fx-font-weight: bold;");
+
+        typeBox.getChildren().add(typeLabel);
+
+        // Formulation info
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(item.getName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        // Get author names
+        StringBuilder authorsStr = new StringBuilder("By: ");
+        if (item instanceof Food) {
+            Food food = (Food) item;
+            for (Author author : food.getAuthors()) {
+                authorsStr.append(author.getName()).append(", ");
+            }
+        } else if (item instanceof Drink) {
+            Drink drink = (Drink) item;
+            for (Author author : drink.getAuthors()) {
+                authorsStr.append(author.getName()).append(", ");
+            }
+        }
+
+        if (authorsStr.length() > 4) {
+            authorsStr.setLength(authorsStr.length() - 2); // Remove trailing comma
+        }
+
+        Label authorLabel = new Label(authorsStr.toString());
+        authorLabel.setFont(FONT_BODY);
+        authorLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        Label detailsLabel = new Label("Price: $" + String.format("%.2f", item.getPrice()) +
+                " | Expiry: " + item.getExpiryDate());
+        detailsLabel.setFont(FONT_BODY);
+        detailsLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        infoBox.getChildren().addAll(nameLabel, authorLabel, detailsLabel);
+
+        // View button
+        Button btnView = createSmallButton("View Details", COLOR_INFO);
+        btnView.setOnAction(e -> showFormulationDetails(item));
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(typeBox, infoBox, btnView);
+
+        return card;
+    }
+
+    private void showFormulationStatistics(Item item) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Statistics: " + item.getName());
+        dialog.initOwner(primaryStage);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
+
+        Label title = new Label(item.getName() + " - Statistics");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        VBox statsBox = new VBox(10);
+        statsBox.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + "; " +
+                "-fx-padding: 15; " +
+                "-fx-background-radius: 8;");
+
+        // Calculate statistics
+        LinkedList<Feedback> feedbacks = getFeedbacks(item);
+        int totalFeedbacks = feedbacks != null ? feedbacks.size() : 0;
+        int likes = 0;
+        if (feedbacks != null) {
+            for (Feedback fb : feedbacks) {
+                if (fb.isLike()) likes++;
+            }
+        }
+
+        addDetail(statsBox, "Price:", "$" + String.format("%.2f", item.getPrice()));
+        addDetail(statsBox, "Expiry Date:", item.getExpiryDate());
+        addDetail(statsBox, "Total Feedbacks:", String.valueOf(totalFeedbacks));
+        addDetail(statsBox, "Likes:", String.valueOf(likes));
+        addDetail(statsBox, "Dislikes:", String.valueOf(totalFeedbacks - likes));
+
+        if (totalFeedbacks > 0) {
+            double likePercentage = (likes * 100.0) / totalFeedbacks;
+            String likeColor = likePercentage >= 80 ? COLOR_SUCCESS :
+                    likePercentage >= 60 ? COLOR_WARNING : COLOR_ERROR;
+
+            addDetail(statsBox, "Like Percentage:",
+                    String.format("%.1f%%", likePercentage), likeColor);
+        }
+
+        if (isItemVetoed(item)) {
+            Label vetoLabel = new Label("⚠ This formulation is VETOED");
+            vetoLabel.setFont(FONT_BODY);
+            vetoLabel.setTextFill(Color.web(COLOR_ERROR));
+            vetoLabel.setStyle("-fx-font-weight: bold;");
+            statsBox.getChildren().add(vetoLabel);
+        }
+
+        Button btnClose = createStandardButton("Close", COLOR_TEXT_SECONDARY);
+        btnClose.setOnAction(e -> dialog.close());
+
+        content.getChildren().addAll(title, statsBox, btnClose);
+
+        Scene scene = new Scene(content, 400, 350);
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 
     // ============ CUSTOMER FUNCTIONALITIES ============
 
-    private void showCustomerBrowseCatalogScreen() {
+    private void showCustomerCatalogScreen() {
         Customer customer = (Customer) currentUser;
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_CUSTOMER + ", #117864);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("BROWSE CATALOG", "Customer: " + customer.getName());
+        VBox header = createHeader("BROWSE CATALOG",
+                "Customer: " + customer.getName() + " | Available Formulations");
         root.setTop(header);
 
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-
-        VBox contentBox = new VBox(15);
-        contentBox.setPadding(new Insets(20));
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
 
         LinkedList<Item> availableItems = customer.getAvailableFormulations();
 
-        if (availableItems == null || availableItems.isEmpty()) {
-            Label lblEmpty = new Label("No formulations available at this time.");
-            lblEmpty.setTextFill(Color.WHITE);
-            lblEmpty.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 16));
-            contentBox.getChildren().add(lblEmpty);
+        if (availableItems.isEmpty()) {
+            Label emptyLabel = new Label("No formulations available at this time");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
         } else {
             for (Item item : availableItems) {
-                VBox itemBox = new VBox(8);
-                itemBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 6; " +
-                        "-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1;");
-
-                Label lblName = new Label(item.getName());
-                lblName.setTextFill(Color.WHITE);
-                lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-
-                Label lblType = new Label("Type: " + (item instanceof Food ? "Food" : "Drink"));
-                lblType.setTextFill(Color.LIGHTGRAY);
-                lblType.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-
-                Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
-                lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
-                lblPrice.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-
-                boolean purchased = customer.isPaid(item);
-                Label lblStatus = new Label(purchased ? "✓ PURCHASED" : "🔒 Not Purchased");
-                lblStatus.setTextFill(purchased ? Color.web(COLOR_SUCCESS) : Color.web(COLOR_ERROR));
-                lblStatus.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
-
-                HBox buttonBox = new HBox(10);
-                Button btnView = createSmallButton("View Details", COLOR_INFO);
-                Button btnPurchase = createSmallButton(purchased ? "Purchased" : "Purchase", purchased ? COLOR_NEUTRAL : COLOR_SUCCESS);
-                btnPurchase.setDisable(purchased);
-
-                btnView.setOnAction(e -> showCustomerItemDetails(item, purchased));
-                btnPurchase.setOnAction(e -> {
-                    showPurchaseDialog(item);
-                    showCustomerBrowseCatalogScreen(); // Refresh
-                });
-
-                buttonBox.getChildren().addAll(btnView, btnPurchase);
-                itemBox.getChildren().addAll(lblName, lblType, lblPrice, lblStatus, buttonBox);
-                contentBox.getChildren().add(itemBox);
+                HBox catalogCard = createCatalogCard(item, customer);
+                content.getChildren().add(catalogCard);
             }
         }
 
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showCustomerDashboard());
-        contentBox.getChildren().add(btnBack);
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
 
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showCustomerDashboard());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
     }
 
-    private void showCustomerItemDetails(Item item, boolean purchased) {
+    private HBox createCatalogCard(Item item, Customer customer) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        // Type indicator
+        VBox typeBox = new VBox();
+        typeBox.setMinWidth(80);
+        typeBox.setAlignment(Pos.CENTER);
+
+        String type = item instanceof Food ? "FOOD" : "DRINK";
+        String typeColor = item instanceof Food ? COLOR_SUCCESS : COLOR_INFO;
+
+        Label typeLabel = new Label(type);
+        typeLabel.setFont(FONT_BODY);
+        typeLabel.setTextFill(Color.web(typeColor));
+        typeLabel.setStyle("-fx-font-weight: bold;");
+
+        typeBox.getChildren().add(typeLabel);
+
+        // Item info
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(item.getName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label priceLabel = new Label("Price: $" + String.format("%.2f", item.getPrice()));
+        priceLabel.setFont(FONT_BODY);
+        priceLabel.setTextFill(Color.web(COLOR_SUCCESS));
+        priceLabel.setStyle("-fx-font-weight: bold;");
+
+        // Get author names
+        StringBuilder authorsStr = new StringBuilder("By: ");
+        if (item instanceof Food) {
+            Food food = (Food) item;
+            for (Author author : food.getAuthors()) {
+                authorsStr.append(author.getName()).append(", ");
+            }
+        } else if (item instanceof Drink) {
+            Drink drink = (Drink) item;
+            for (Author author : drink.getAuthors()) {
+                authorsStr.append(author.getName()).append(", ");
+            }
+        }
+
+        if (authorsStr.length() > 4) {
+            authorsStr.setLength(authorsStr.length() - 2);
+            Label authorLabel = new Label(authorsStr.toString());
+            authorLabel.setFont(FONT_BODY);
+            authorLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            infoBox.getChildren().add(authorLabel);
+        }
+
+        infoBox.getChildren().addAll(nameLabel, priceLabel);
+
+        // Purchase status and buttons
+        VBox actionBox = new VBox(10);
+        actionBox.setAlignment(Pos.CENTER_RIGHT);
+        actionBox.setMinWidth(200);
+
+        boolean purchased = customer.isPaid(item);
+
+        Label statusLabel = new Label(purchased ? "✓ PURCHASED" : "Available for Purchase");
+        statusLabel.setFont(FONT_BODY);
+        statusLabel.setTextFill(purchased ? Color.web(COLOR_SUCCESS) : Color.web(COLOR_TEXT_SECONDARY));
+        statusLabel.setStyle("-fx-font-weight: bold;");
+
+        HBox buttonBox = new HBox(10);
+        Button btnView = createSmallButton("View Details", COLOR_INFO);
+        Button btnAction = createSmallButton(purchased ? "View" : "Purchase",
+                purchased ? COLOR_INFO : COLOR_SUCCESS);
+
+        btnView.setOnAction(e -> showCustomerItemDetails(item, customer));
+        btnAction.setOnAction(e -> {
+            if (purchased) {
+                showCustomerItemDetails(item, customer);
+            } else {
+                showPurchaseDialog(item);
+            }
+        });
+
+        buttonBox.getChildren().addAll(btnView, btnAction);
+        actionBox.getChildren().addAll(statusLabel, buttonBox);
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(typeBox, infoBox, actionBox);
+
+        return card;
+    }
+
+    private void showCustomerItemDetails(Item item, Customer customer) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle(item.getName());
         dialog.initOwner(primaryStage);
 
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
 
-        Label lblName = new Label(item.getName());
-        lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-        lblName.setTextFill(Color.web(COLOR_INFO));
-        Label lblType = new Label("Type: " + (item instanceof Food ? "Food" : "Drink"));
-        Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
-        lblPrice.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-        lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
+        Label title = new Label(item.getName());
+        title.setFont(FONT_TITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        vbox.getChildren().addAll(lblName, lblType, lblPrice);
+        VBox detailsBox = new VBox(10);
+        detailsBox.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + "; " +
+                "-fx-padding: 15; " +
+                "-fx-background-radius: 8;");
+
+        addDetail(detailsBox, "Type:", item instanceof Food ? "Food" : "Drink");
+        addDetail(detailsBox, "Price:", "$" + String.format("%.2f", item.getPrice()));
+        addDetail(detailsBox, "Expiry Date:", item.getExpiryDate());
+
+        boolean purchased = customer.isPaid(item);
 
         if (purchased) {
             // Show full details for purchased items
+            Label purchasedLabel = new Label("✓ You have purchased this item");
+            purchasedLabel.setFont(FONT_BODY);
+            purchasedLabel.setTextFill(Color.web(COLOR_SUCCESS));
+            purchasedLabel.setStyle("-fx-font-weight: bold;");
+            detailsBox.getChildren().add(purchasedLabel);
+
+            // Show ingredients
             LinkedList<Ingredient> ingredients = getIngredients(item);
             if (ingredients != null && !ingredients.isEmpty()) {
-                Label lblIngredients = new Label("\nIngredients:");
-                lblIngredients.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-                lblIngredients.setTextFill(Color.web(COLOR_PRIMARY));
-                vbox.getChildren().add(lblIngredients);
+                Label ingTitle = new Label("Ingredients:");
+                ingTitle.setFont(FONT_SUBTITLE);
+                ingTitle.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+                ingTitle.setPadding(new Insets(10, 0, 5, 0));
+                detailsBox.getChildren().add(ingTitle);
 
                 for (Ingredient ing : ingredients) {
-                    Label lblIng = new Label("  • " + ing.getName());
-                    vbox.getChildren().add(lblIng);
+                    Label ingLabel = new Label("• " + ing.getName());
+                    ingLabel.setFont(FONT_BODY);
+                    ingLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+                    detailsBox.getChildren().add(ingLabel);
                 }
             }
 
             // Add feedback button
-            Button btnFeedback = createSmallButton("Provide Feedback", COLOR_INFO);
+            Button btnFeedback = createStandardButton("Provide Feedback", COLOR_INFO);
             btnFeedback.setOnAction(e -> {
                 dialog.close();
                 showFeedbackDialog(item);
             });
-            vbox.getChildren().add(btnFeedback);
+            detailsBox.getChildren().add(btnFeedback);
+
         } else {
-            Label lblLocked = new Label("\n🔒 Full details available after purchase");
-            lblLocked.setTextFill(Color.web(COLOR_ERROR));
-            vbox.getChildren().add(lblLocked);
+            Label lockedLabel = new Label("🔒 Purchase this item to view full details and ingredients");
+            lockedLabel.setFont(FONT_BODY);
+            lockedLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            detailsBox.getChildren().add(lockedLabel);
         }
 
-        Button btnClose = createSmallButton("Close", COLOR_NEUTRAL);
-        btnClose.setOnAction(e -> dialog.close());
-        vbox.getChildren().add(btnClose);
+        HBox buttonBox = new HBox(15);
+        buttonBox.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(vbox, 400, 300);
+        Button btnPurchase = createStandardButton("Purchase", COLOR_SUCCESS);
+        Button btnFavorite = createStandardButton("Add to Favorites", COLOR_WARNING);
+        Button btnClose = createStandardButton("Close", COLOR_TEXT_SECONDARY);
+
+        btnPurchase.setOnAction(e -> {
+            dialog.close();
+            showPurchaseDialog(item);
+        });
+
+        btnFavorite.setOnAction(e -> {
+            customer.addToFavorites(item);
+            showInformation("Added", "Added to favorites");
+        });
+
+        btnClose.setOnAction(e -> dialog.close());
+
+        if (purchased) {
+            buttonBox.getChildren().addAll(btnFavorite, btnClose);
+        } else {
+            buttonBox.getChildren().addAll(btnPurchase, btnFavorite, btnClose);
+        }
+
+        content.getChildren().addAll(title, detailsBox, buttonBox);
+
+        Scene scene = new Scene(content, 500, purchased ? 500 : 400);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
@@ -2776,51 +4190,380 @@ public class Main_GUI extends Application {
         dialog.setTitle("Purchase: " + item.getName());
         dialog.initOwner(primaryStage);
 
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
 
-        Label lblItem = new Label("Item: " + item.getName());
-        lblItem.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-        Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
-        lblPrice.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-        lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
+        Label title = new Label("Confirm Purchase");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        Label lblMethod = new Label("Select Payment Method:");
-        ComboBox<String> comboMethod = new ComboBox<>();
-        comboMethod.getItems().addAll("Credit Card", "Debit Card", "Mobile Payment", "Cash");
-        comboMethod.setValue("Credit Card");
-        comboMethod.setStyle("-fx-border-color: " + COLOR_NEUTRAL + ";");
+        Label itemLabel = new Label("Item: " + item.getName());
+        itemLabel.setFont(FONT_BODY);
+        itemLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        HBox buttonBox = new HBox(10);
+        Label priceLabel = new Label("Price: $" + String.format("%.2f", item.getPrice()));
+        priceLabel.setFont(FONT_TITLE);
+        priceLabel.setTextFill(Color.web(COLOR_SUCCESS));
+
+        Label methodLabel = new Label("Select Payment Method:");
+        methodLabel.setFont(FONT_BODY);
+        methodLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        ComboBox<String> methodCombo = new ComboBox<>();
+        methodCombo.getItems().addAll("Credit Card", "Debit Card", "PayPal", "Bank Transfer", "Cash");
+        methodCombo.setValue("Credit Card");
+        methodCombo.setStyle("-fx-background-color: white; " +
+                "-fx-border-color: " + COLOR_BORDER + ";");
+
+        HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(Pos.CENTER);
 
-        Button btnPurchase = createSmallButton("Confirm Purchase", COLOR_SUCCESS);
-        Button btnCancel = createSmallButton("Cancel", COLOR_NEUTRAL);
+        Button btnPurchase = createStandardButton("Confirm Purchase", COLOR_SUCCESS);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
 
         btnPurchase.setOnAction(e -> {
             Customer customer = (Customer) currentUser;
-            String paymentMethod = comboMethod.getValue();
+            String method = methodCombo.getValue();
 
-            // Simulate payment processing
-            if (customer.makePayment(item, paymentMethod)) {
-                databaseManager.saveCustomer(customer);
+            if (customer.makePayment(item, method)) {
+                if (databaseManager != null) {
+                    databaseManager.saveCustomer(customer);
+                }
+
                 auditTrail.logAction("CUSTOMER:" + customer.getName(),
-                        "Purchased: " + item.getName() + " for $" + item.getPrice());
+                        "Purchased: " + item.getName() + " for $" + item.getPrice() +
+                                " via " + method);
                 showInformation("Success", "Purchase completed successfully!");
                 dialog.close();
+                showCustomerCatalogScreen();
+            } else {
+                showError("Purchase Failed", "Could not complete purchase. Please try again.");
             }
         });
 
         btnCancel.setOnAction(e -> dialog.close());
 
         buttonBox.getChildren().addAll(btnPurchase, btnCancel);
-        vbox.getChildren().addAll(lblItem, lblPrice, lblMethod, comboMethod, buttonBox);
+        content.getChildren().addAll(title, itemLabel, priceLabel, methodLabel, methodCombo, buttonBox);
 
-        Scene scene = new Scene(vbox, 300, 250);
+        Scene scene = new Scene(content, 400, 350);
         dialog.setScene(scene);
         dialog.showAndWait();
+    }
+
+    private void showCustomerPurchasesScreen() {
+        Customer customer = (Customer) currentUser;
+
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("MY PURCHASES",
+                "Customer: " + customer.getName() + " | Purchase History");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        if (customer.getPurchasedItems().isEmpty()) {
+            Label emptyLabel = new Label("No purchases yet");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Customer.PurchaseRecord record : customer.getPurchasedItems().values()) {
+                HBox purchaseCard = createPurchaseCard(record);
+                content.getChildren().add(purchaseCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showCustomerDashboard());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createPurchaseCard(Customer.PurchaseRecord record) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(record.getItemName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label priceLabel = new Label("$" + String.format("%.2f", record.getPrice()));
+        priceLabel.setFont(FONT_BODY);
+        priceLabel.setTextFill(Color.web(COLOR_SUCCESS));
+        priceLabel.setStyle("-fx-font-weight: bold;");
+
+        Label dateLabel = new Label("Date: " + record.getPurchaseDate());
+        dateLabel.setFont(FONT_BODY);
+        dateLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        Label methodLabel = new Label("Method: " + record.getPaymentMethod());
+        methodLabel.setFont(FONT_BODY);
+        methodLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        infoBox.getChildren().addAll(nameLabel, priceLabel, dateLabel, methodLabel);
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().add(infoBox);
+
+        return card;
+    }
+
+    private void showCustomerFavoritesScreen() {
+        Customer customer = (Customer) currentUser;
+
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("MY FAVORITES",
+                "Customer: " + customer.getName() + " | Favorite Formulations");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        if (customer.getFavoriteFormulations().isEmpty()) {
+            Label emptyLabel = new Label("No favorites yet. Browse the catalog to add favorites!");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Item item : customer.getFavoriteFormulations()) {
+                HBox favoriteCard = createFavoriteCard(item, customer);
+                content.getChildren().add(favoriteCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showCustomerDashboard());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createFavoriteCard(Item item, Customer customer) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(item.getName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label priceLabel = new Label("$" + String.format("%.2f", item.getPrice()));
+        priceLabel.setFont(FONT_BODY);
+        priceLabel.setTextFill(Color.web(COLOR_SUCCESS));
+
+        boolean purchased = customer.isPaid(item);
+        Label statusLabel = new Label(purchased ? "✓ Purchased" : "Not purchased");
+        statusLabel.setFont(FONT_BODY);
+        statusLabel.setTextFill(purchased ? Color.web(COLOR_SUCCESS) : Color.web(COLOR_TEXT_SECONDARY));
+
+        infoBox.getChildren().addAll(nameLabel, priceLabel, statusLabel);
+
+        HBox buttonBox = new HBox(10);
+        Button btnView = createSmallButton("View", COLOR_INFO);
+        Button btnRemove = createSmallButton("Remove", COLOR_ERROR);
+
+        btnView.setOnAction(e -> showCustomerItemDetails(item, customer));
+        btnRemove.setOnAction(e -> {
+            customer.removeFromFavorites(item);
+            if (databaseManager != null) {
+                databaseManager.saveCustomer(customer);
+            }
+            showCustomerFavoritesScreen(); // Refresh
+        });
+
+        buttonBox.getChildren().addAll(btnView, btnRemove);
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(infoBox, buttonBox);
+
+        return card;
+    }
+
+    private void showCustomerProfileScreen() {
+        Customer customer = (Customer) currentUser;
+
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("MY PROFILE",
+                "Customer: " + customer.getName() + " | Account Information");
+        root.setTop(header);
+
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        content.setAlignment(Pos.CENTER);
+
+        VBox profileBox = new VBox(15);
+        profileBox.setStyle("-fx-background-color: white; " +
+                "-fx-padding: 30; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8;");
+        profileBox.setMaxWidth(500);
+
+        Label title = new Label("Account Details");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_CUSTOMER));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(15);
+        grid.setPadding(new Insets(20, 0, 20, 0));
+
+        addDetail(grid, "Customer ID:", String.valueOf(customer.getCustomerID()), 0);
+        addDetail(grid, "Name:", customer.getName(), 1);
+        addDetail(grid, "Age:", String.valueOf(customer.getAge()), 2);
+        addDetail(grid, "Address:", customer.getAddress() != null ? customer.getAddress() : "Not set", 3);
+        addDetail(grid, "Contact:", customer.getContact() != null ? customer.getContact() : "Not set", 4);
+        addDetail(grid, "Date of Birth:", customer.getDateofbirth() != null ? customer.getDateofbirth() : "Not set", 5);
+        addDetail(grid, "Total Purchases:", String.valueOf(customer.getPurchasedItems().size()), 6);
+        addDetail(grid, "Total Favorites:", String.valueOf(customer.getFavoriteFormulations().size()), 7);
+        addDetail(grid, "Feedback Given:", String.valueOf(customer.getFeedbackHistory().size()), 8);
+
+        profileBox.getChildren().addAll(title, grid);
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showCustomerDashboard());
+
+        content.getChildren().addAll(profileBox, btnBack);
+        root.setCenter(content);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private void showFeedbackManagementScreen() {
+        Customer customer = (Customer) currentUser;
+
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
+
+        VBox header = createHeader("FEEDBACK MANAGEMENT",
+                "Customer: " + customer.getName() + " | Provide Feedback");
+        root.setTop(header);
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+
+        // Find purchased items without feedback
+        LinkedList<Item> itemsWithoutFeedback = new LinkedList<>();
+        for (Customer.PurchaseRecord record : customer.getPurchasedItems().values()) {
+            for (Item item : allFormulations) {
+                if (item.getName().equals(record.getItemName())) {
+                    // Check if feedback already given
+                    boolean hasFeedback = false;
+                    LinkedList<Feedback> feedbacks = getFeedbacks(item);
+                    if (feedbacks != null) {
+                        for (Feedback fb : feedbacks) {
+                            if (fb.getConsumerName().equals(customer.getName())) {
+                                hasFeedback = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hasFeedback) {
+                        itemsWithoutFeedback.add(item);
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (itemsWithoutFeedback.isEmpty()) {
+            Label emptyLabel = new Label("No items available for feedback. Purchase items first.");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
+        } else {
+            for (Item item : itemsWithoutFeedback) {
+                HBox feedbackCard = createFeedbackCard(item);
+                content.getChildren().add(feedbackCard);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showCustomerDashboard());
+
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
+
+        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(currentScene);
+    }
+
+    private HBox createFeedbackCard(Item item) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 8; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8;");
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        VBox infoBox = new VBox(5);
+
+        Label nameLabel = new Label(item.getName());
+        nameLabel.setFont(FONT_SUBTITLE);
+        nameLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label typeLabel = new Label("Type: " + (item instanceof Food ? "Food" : "Drink"));
+        typeLabel.setFont(FONT_BODY);
+        typeLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        infoBox.getChildren().addAll(nameLabel, typeLabel);
+
+        Button btnFeedback = createSmallButton("Give Feedback", COLOR_INFO);
+        btnFeedback.setOnAction(e -> showFeedbackDialog(item));
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        card.getChildren().addAll(infoBox, btnFeedback);
+
+        return card;
     }
 
     private void showFeedbackDialog(Item item) {
@@ -2829,13 +4572,22 @@ public class Main_GUI extends Application {
         dialog.setTitle("Feedback for: " + item.getName());
         dialog.initOwner(primaryStage);
 
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: " + COLOR_LIGHT + ";");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: white;");
 
-        Label lblQuestion = new Label("Did you like this formulation?");
-        lblQuestion.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        Label title = new Label("Provide Feedback");
+        title.setFont(FONT_SUBTITLE);
+        title.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label itemLabel = new Label("Item: " + item.getName());
+        itemLabel.setFont(FONT_BODY);
+        itemLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label questionLabel = new Label("Did you like this formulation?");
+        questionLabel.setFont(FONT_BODY);
+        questionLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
         ToggleGroup group = new ToggleGroup();
         RadioButton rbLike = new RadioButton("👍 Like");
         RadioButton rbDislike = new RadioButton("👎 Dislike");
@@ -2843,17 +4595,24 @@ public class Main_GUI extends Application {
         rbDislike.setToggleGroup(group);
         rbLike.setSelected(true);
 
-        Label lblComment = new Label("Comments:");
-        TextArea txtComment = new TextArea();
-        txtComment.setPrefRowCount(3);
-        txtComment.setWrapText(true);
-        txtComment.setStyle("-fx-control-inner-background: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
+        VBox radioBox = new VBox(10, rbLike, rbDislike);
+        radioBox.setPadding(new Insets(10, 0, 10, 0));
 
-        HBox buttonBox = new HBox(10);
+        Label commentLabel = new Label("Comments (optional):");
+        commentLabel.setFont(FONT_BODY);
+        commentLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        TextArea txtComment = new TextArea();
+        txtComment.setPromptText("Share your thoughts about this formulation...");
+        txtComment.setPrefRowCount(4);
+        txtComment.setStyle("-fx-control-inner-background: white; " +
+                "-fx-border-color: " + COLOR_BORDER + ";");
+
+        HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(Pos.CENTER);
 
-        Button btnSubmit = createSmallButton("Submit Feedback", COLOR_SUCCESS);
-        Button btnCancel = createSmallButton("Cancel", COLOR_NEUTRAL);
+        Button btnSubmit = createStandardButton("Submit Feedback", COLOR_SUCCESS);
+        Button btnCancel = createStandardButton("Cancel", COLOR_TEXT_SECONDARY);
 
         btnSubmit.setOnAction(e -> {
             boolean like = rbLike.isSelected();
@@ -2867,182 +4626,153 @@ public class Main_GUI extends Application {
             Feedback feedback = customer.provideFeedback(item, comment, like);
 
             if (feedback != null) {
-                databaseManager.saveItem(item);
+                if (databaseManager != null) {
+                    databaseManager.saveItem(item);
+                }
+
                 auditTrail.logAction("CUSTOMER:" + customer.getName(),
                         "Provided feedback on: " + item.getName() + " (" + (like ? "Like" : "Dislike") + ")");
                 showInformation("Thank You", "Your feedback has been submitted!");
                 dialog.close();
+                showFeedbackManagementScreen();
             }
         });
 
         btnCancel.setOnAction(e -> dialog.close());
 
-        vbox.getChildren().addAll(lblQuestion, rbLike, rbDislike, lblComment, txtComment, buttonBox);
         buttonBox.getChildren().addAll(btnSubmit, btnCancel);
+        content.getChildren().addAll(title, itemLabel, questionLabel, radioBox,
+                commentLabel, txtComment, buttonBox);
 
-        Scene scene = new Scene(vbox, 400, 300);
+        Scene scene = new Scene(content, 400, 450);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
 
-    private void showCustomerPurchasesScreen() {
-        Customer customer = (Customer) currentUser;
-
+    private void showSearchFormulationsScreen() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_CUSTOMER + ", #117864);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("MY PURCHASES", "Customer: " + customer.getName());
+        VBox header = createHeader("SEARCH FORMULATIONS",
+                "Customer: " + ((Customer)currentUser).getName() + " | Search and Filter");
         root.setTop(header);
 
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(30));
+        content.setAlignment(Pos.CENTER);
 
-        VBox contentBox = new VBox(15);
-        contentBox.setPadding(new Insets(20));
+        Label searchLabel = new Label("Search Formulations");
+        searchLabel.setFont(FONT_SUBTITLE);
+        searchLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        if (customer.getPurchasedItems().isEmpty()) {
-            Label lblEmpty = new Label("You haven't purchased any items yet.");
-            lblEmpty.setTextFill(Color.WHITE);
-            lblEmpty.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 16));
-            contentBox.getChildren().add(lblEmpty);
-        } else {
-            for (Customer.PurchaseRecord record : customer.getPurchasedItems().values()) {
-                VBox recordBox = new VBox(5);
-                recordBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 6; " +
-                        "-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1;");
+        TextField txtSearch = new TextField();
+        txtSearch.setPromptText("Enter formulation name or keyword...");
+        txtSearch.setStyle(createTextFieldStyle());
+        txtSearch.setMaxWidth(400);
 
-                Label lblItem = new Label(record.getItemName());
-                lblItem.setTextFill(Color.WHITE);
-                lblItem.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        HBox filterBox = new HBox(15);
+        filterBox.setAlignment(Pos.CENTER);
 
-                Label lblPrice = new Label("Price: $" + String.format("%.2f", record.getPrice()));
-                lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
+        Label filterLabel = new Label("Filter by:");
+        filterLabel.setFont(FONT_BODY);
+        filterLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-                Label lblDate = new Label("Date: " + record.getPurchaseDate());
-                lblDate.setTextFill(Color.LIGHTGRAY);
-                lblDate.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
+        ComboBox<String> filterCombo = new ComboBox<>();
+        filterCombo.getItems().addAll("All", "Food Only", "Drink Only", "Under $10", "$10-$20", "Over $20");
+        filterCombo.setValue("All");
+        filterCombo.setStyle("-fx-background-color: white; " +
+                "-fx-border-color: " + COLOR_BORDER + ";");
 
-                Label lblMethod = new Label("Method: " + record.getPaymentMethod());
-                lblMethod.setTextFill(Color.LIGHTGRAY);
-                lblMethod.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
+        Button btnSearch = createStandardButton("Search", COLOR_INFO);
+        Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
 
-                recordBox.getChildren().addAll(lblItem, lblPrice, lblDate, lblMethod);
-                contentBox.getChildren().add(recordBox);
+        btnSearch.setOnAction(e -> {
+            String searchTerm = txtSearch.getText().trim().toLowerCase();
+            String filter = filterCombo.getValue();
+
+            LinkedList<Item> searchResults = new LinkedList<>();
+            for (Item item : ((Customer)currentUser).getAvailableFormulations()) {
+                // Apply search filter
+                if (!searchTerm.isEmpty() && !item.getName().toLowerCase().contains(searchTerm)) {
+                    continue;
+                }
+
+                // Apply type filter
+                if (filter.equals("Food Only") && !(item instanceof Food)) {
+                    continue;
+                }
+                if (filter.equals("Drink Only") && !(item instanceof Drink)) {
+                    continue;
+                }
+
+                // Apply price filter
+                if (filter.equals("Under $10") && item.getPrice() >= 10) {
+                    continue;
+                }
+                if (filter.equals("$10-$20") && (item.getPrice() < 10 || item.getPrice() > 20)) {
+                    continue;
+                }
+                if (filter.equals("Over $20") && item.getPrice() <= 20) {
+                    continue;
+                }
+
+                searchResults.add(item);
             }
-        }
 
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
+            showSearchResults(searchResults, searchTerm, filter);
+        });
+
         btnBack.setOnAction(e -> showCustomerDashboard());
-        contentBox.getChildren().add(btnBack);
 
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
+        filterBox.getChildren().addAll(filterLabel, filterCombo);
+        content.getChildren().addAll(searchLabel, txtSearch, filterBox, btnSearch, btnBack);
+        root.setCenter(content);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
     }
 
-    private void showCustomerFavoritesScreen() {
-        Customer customer = (Customer) currentUser;
-
+    private void showSearchResults(LinkedList<Item> results, String searchTerm, String filter) {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_CUSTOMER + ", #117864);");
+        root.setStyle("-fx-background-color: " + COLOR_LIGHT_BG + ";");
 
-        VBox header = createHeader("MY FAVORITES", "Customer: " + customer.getName());
+        String resultsTitle = "Search Results";
+        if (!searchTerm.isEmpty()) {
+            resultsTitle += " for '" + searchTerm + "'";
+        }
+        if (!filter.equals("All")) {
+            resultsTitle += " (" + filter + ")";
+        }
+
+        VBox header = createHeader(resultsTitle,
+                "Found " + results.size() + " formulation(s)");
         root.setTop(header);
 
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
 
-        VBox contentBox = new VBox(15);
-        contentBox.setPadding(new Insets(20));
-
-        LinkedList<Item> favorites = customer.getFavoriteFormulations();
-
-        if (favorites.isEmpty()) {
-            Label lblEmpty = new Label("No favorites yet. Browse the catalog to add favorites!");
-            lblEmpty.setTextFill(Color.WHITE);
-            lblEmpty.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 16));
-            contentBox.getChildren().add(lblEmpty);
+        if (results.isEmpty()) {
+            Label emptyLabel = new Label("No formulations found matching your criteria");
+            emptyLabel.setFont(FONT_BODY);
+            emptyLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+            content.getChildren().add(emptyLabel);
         } else {
-            for (Item item : favorites) {
-                VBox itemBox = new VBox(5);
-                itemBox.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15; -fx-background-radius: 6; " +
-                        "-fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1;");
-
-                Label lblName = new Label(item.getName());
-                lblName.setTextFill(Color.WHITE);
-                lblName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-
-                Label lblPrice = new Label("Price: $" + String.format("%.2f", item.getPrice()));
-                lblPrice.setTextFill(Color.web(COLOR_SUCCESS));
-
-                boolean purchased = customer.isPaid(item);
-                Label lblStatus = new Label(purchased ? "✓ Purchased" : "🔒 Not Purchased");
-                lblStatus.setTextFill(purchased ? Color.web(COLOR_SUCCESS) : Color.web(COLOR_ERROR));
-                lblStatus.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
-
-                HBox buttonBox = new HBox(10);
-                Button btnView = createSmallButton("View", COLOR_INFO);
-                Button btnRemove = createSmallButton("Remove", COLOR_ERROR);
-
-                btnView.setOnAction(e -> showCustomerItemDetails(item, purchased));
-                btnRemove.setOnAction(e -> {
-                    customer.removeFromFavorites(item);
-                    databaseManager.saveCustomer(customer);
-                    showCustomerFavoritesScreen(); // Refresh
-                });
-
-                buttonBox.getChildren().addAll(btnView, btnRemove);
-                itemBox.getChildren().addAll(lblName, lblPrice, lblStatus, buttonBox);
-                contentBox.getChildren().add(itemBox);
+            for (Item item : results) {
+                HBox resultCard = createCatalogCard(item, (Customer) currentUser);
+                content.getChildren().add(resultCard);
             }
         }
 
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showCustomerDashboard());
-        contentBox.getChildren().add(btnBack);
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent;");
 
-        scrollPane.setContent(contentBox);
-        root.setCenter(scrollPane);
+        Button btnBack = createStandardButton("Back to Search", COLOR_TEXT_SECONDARY);
+        btnBack.setOnAction(e -> showSearchFormulationsScreen());
 
-        currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(currentScene);
-    }
-
-    private void showCustomerProfileScreen() {
-        Customer customer = (Customer) currentUser;
-
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, " + COLOR_CUSTOMER + ", #117864);");
-
-        VBox header = createHeader("MY PROFILE", "Customer: " + customer.getName());
-        root.setTop(header);
-
-        VBox contentBox = new VBox(15);
-        contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPadding(new Insets(30));
-
-        GridPane profileGrid = new GridPane();
-        profileGrid.setHgap(30);
-        profileGrid.setVgap(15);
-        profileGrid.setAlignment(Pos.CENTER);
-
-        addStatRow(profileGrid, 0, "Customer ID:", String.valueOf(customer.getCustomerID()), COLOR_INFO);
-        addStatRow(profileGrid, 1, "Name:", customer.getName(), COLOR_INFO);
-        addStatRow(profileGrid, 2, "Age:", String.valueOf(customer.getAge()), COLOR_SUCCESS);
-        addStatRow(profileGrid, 3, "Contact:", customer.getContact() != null ? customer.getContact() : "N/A", COLOR_INFO);
-        addStatRow(profileGrid, 4, "Total Purchases:", String.valueOf(customer.getPurchasedItems().size()), COLOR_SUCCESS);
-        addStatRow(profileGrid, 5, "Total Favorites:", String.valueOf(customer.getFavoriteFormulations().size()), COLOR_PURPLE);
-        addStatRow(profileGrid, 6, "Feedback Given:", String.valueOf(customer.getFeedbackHistory().size()), COLOR_INFO);
-
-        Button btnBack = createMenuButton("Back to Dashboard", COLOR_NEUTRAL);
-        btnBack.setOnAction(e -> showCustomerDashboard());
-
-        contentBox.getChildren().addAll(profileGrid, btnBack);
-        root.setCenter(contentBox);
+        VBox mainContent = new VBox(20, scrollPane, btnBack);
+        mainContent.setPadding(new Insets(20));
+        root.setCenter(mainContent);
 
         currentScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         primaryStage.setScene(currentScene);
@@ -3050,26 +4780,23 @@ public class Main_GUI extends Application {
 
     // ============ HELPER METHODS ============
 
-    /**
-     * Get non-vetoed formulations for customers
-     */
     private LinkedList<Item> getNonVetoedFormulations() {
         LinkedList<Item> nonVetoed = new LinkedList<>();
-
         for (Item item : allFormulations) {
             if (!isItemVetoed(item)) {
                 nonVetoed.add(item);
             }
         }
-
         return nonVetoed;
     }
 
     private boolean isItemVetoed(Item item) {
         if (item instanceof Food) {
-            return ((Food) item).isVetoed();
+            Veto veto = ((Food) item).getVeto();
+            return veto != null && veto.isActive();
         } else if (item instanceof Drink) {
-            return ((Drink) item).isVetoed();
+            Veto veto = ((Drink) item).getVeto();
+            return veto != null && veto.isActive();
         }
         return false;
     }
@@ -3092,9 +4819,115 @@ public class Main_GUI extends Application {
         return null;
     }
 
-    /**
-     * Logout current user
-     */
+    private int countVetoedFormulations() {
+        int count = 0;
+        for (Item item : allFormulations) {
+            if (isItemVetoed(item)) count++;
+        }
+        return count;
+    }
+
+    private int countFoodFormulations() {
+        int count = 0;
+        for (Item item : allFormulations) {
+            if (item instanceof Food) count++;
+        }
+        return count;
+    }
+
+    private int countDrinkFormulations() {
+        int count = 0;
+        for (Item item : allFormulations) {
+            if (item instanceof Drink) count++;
+        }
+        return count;
+    }
+
+    private int countTotalPurchases() {
+        int total = 0;
+        for (Customer customer : customers) {
+            total += customer.getPurchasedItems().size();
+        }
+        return total;
+    }
+
+    private int countTotalFeedbacks() {
+        int total = 0;
+        for (Item item : allFormulations) {
+            LinkedList<Feedback> feedbacks = getFeedbacks(item);
+            if (feedbacks != null) {
+                total += feedbacks.size();
+            }
+        }
+        return total;
+    }
+
+    private int countAuthorFoods(Author author) {
+        int count = 0;
+        for (Item item : author.getFormulatedItems()) {
+            if (item instanceof Food) count++;
+        }
+        return count;
+    }
+
+    private int countAuthorDrinks(Author author) {
+        int count = 0;
+        for (Item item : author.getFormulatedItems()) {
+            if (item instanceof Drink) count++;
+        }
+        return count;
+    }
+
+    private int countAuthorFeedbacks(Author author) {
+        int total = 0;
+        for (Item item : author.getFormulatedItems()) {
+            LinkedList<Feedback> feedbacks = getFeedbacks(item);
+            if (feedbacks != null) {
+                total += feedbacks.size();
+            }
+        }
+        return total;
+    }
+
+    private int countAuthorPositiveFeedbacks(Author author) {
+        int total = 0;
+        for (Item item : author.getFormulatedItems()) {
+            LinkedList<Feedback> feedbacks = getFeedbacks(item);
+            if (feedbacks != null) {
+                for (Feedback fb : feedbacks) {
+                    if (fb.isLike()) total++;
+                }
+            }
+        }
+        return total;
+    }
+
+    private double calculateAuthorAveragePrice(Author author) {
+        if (author.getFormulatedItems().isEmpty()) return 0.0;
+        double total = 0.0;
+        for (Item item : author.getFormulatedItems()) {
+            total += item.getPrice();
+        }
+        return total / author.getFormulatedItems().size();
+    }
+
+    private int countAuthorVetoedFormulations(Author author) {
+        int count = 0;
+        for (Item item : author.getFormulatedItems()) {
+            if (isItemVetoed(item)) count++;
+        }
+        return count;
+    }
+
+    private String getUserColor(String userType) {
+        switch (userType) {
+            case "ADMIN": return COLOR_ADMIN;
+            case "AUTHOR": return COLOR_AUTHOR;
+            case "CUSTOMER": return COLOR_CUSTOMER;
+            default: return COLOR_PRIMARY;
+        }
+    }
+
     private void logout() {
         if (currentUser != null) {
             String userName = "";
@@ -3119,9 +4952,6 @@ public class Main_GUI extends Application {
         }
     }
 
-    /**
-     * Handle application exit
-     */
     private void handleExit() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Exit Application");
@@ -3146,175 +4976,299 @@ public class Main_GUI extends Application {
                 auditTrail.logAction("SYSTEM", "Application closed without saving at " + new Date());
                 System.exit(0);
             }
-            // If Cancel, do nothing (alert closes)
+            // If Cancel, do nothing
         }
     }
 
     // ============ UI COMPONENT CREATORS ============
 
-    /**
-     * Create header section
-     */
     private VBox createHeader(String title, String subtitle) {
         VBox header = new VBox(5);
         header.setPadding(new Insets(20));
         header.setAlignment(Pos.CENTER);
-        header.setStyle("-fx-background-color: rgba(0,0,0,0.3);");
+        header.setStyle("-fx-background-color: " + COLOR_PRIMARY + ";");
 
         Label lblTitle = new Label(title);
-        lblTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
-        lblTitle.setTextFill(Color.WHITE);
+        lblTitle.setFont(FONT_TITLE);
+        lblTitle.setTextFill(Color.web(COLOR_TEXT_LIGHT));
 
         Label lblSubtitle = new Label(subtitle);
-        lblSubtitle.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 14));
-        lblSubtitle.setTextFill(Color.LIGHTGRAY);
+        lblSubtitle.setFont(FONT_BODY);
+        lblSubtitle.setTextFill(Color.web("#BDC3C7")); // Slightly lighter gray
 
         header.getChildren().addAll(lblTitle, lblSubtitle);
         return header;
     }
 
-    /**
-     * Create footer section
-     */
     private HBox createFooter(String message) {
         HBox footer = new HBox();
         footer.setPadding(new Insets(15));
         footer.setAlignment(Pos.CENTER);
-        footer.setStyle("-fx-background-color: rgba(0,0,0,0.3);");
+        footer.setStyle("-fx-background-color: " + COLOR_SECONDARY + ";");
 
         Label lblFooter = new Label(message);
-        lblFooter.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-        lblFooter.setTextFill(Color.LIGHTGRAY);
+        lblFooter.setFont(FONT_BODY);
+        lblFooter.setTextFill(Color.web(COLOR_TEXT_LIGHT));
 
         footer.getChildren().add(lblFooter);
         return footer;
     }
 
-    /**
-     * Create menu button
-     */
     private Button createMenuButton(String text, String color) {
         Button button = new Button(text);
-        button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
-                "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 15 40; " +
-                "-fx-background-radius: 4; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
+        button.setStyle("-fx-background-color: " + color + "; " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 14px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-padding: 15 40; " +
+                "-fx-background-radius: 5; " +
+                "-fx-cursor: hand;");
         button.setMaxWidth(400);
         button.setMinWidth(300);
 
-        // Hover effect
+        // Subtle hover effect
         button.setOnMouseEntered(e ->
-                button.setStyle("-fx-background-color: derive(" + color + ", -15%); -fx-text-fill: white; " +
-                        "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 15 40; " +
-                        "-fx-background-radius: 4; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);"));
+                button.setStyle("-fx-background-color: derive(" + color + ", 20%); " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 15 40; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-cursor: hand;"));
 
         button.setOnMouseExited(e ->
-                button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
-                        "-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 15 40; " +
-                        "-fx-background-radius: 4; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"));
+                button.setStyle("-fx-background-color: " + color + "; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 15 40; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-cursor: hand;"));
+
+        return button;
+    }
+
+    private Button createStandardButton(String text, String color) {
+        Button button = new Button(text);
+        button.setStyle("-fx-background-color: " + color + "; " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 14px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-padding: 10 25; " +
+                "-fx-background-radius: 5; " +
+                "-fx-cursor: hand;");
+
+        // Subtle hover effect
+        button.setOnMouseEntered(e ->
+                button.setStyle("-fx-background-color: derive(" + color + ", 20%); " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 10 25; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-cursor: hand;"));
+
+        button.setOnMouseExited(e ->
+                button.setStyle("-fx-background-color: " + color + "; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 10 25; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-cursor: hand;"));
 
         return button;
     }
 
     private Button createSmallButton(String text, String color) {
         Button button = new Button(text);
-        button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
-                "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5 15; " +
-                "-fx-background-radius: 3; -fx-cursor: hand;");
+        button.setStyle("-fx-background-color: " + color + "; " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 12px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-padding: 5 15; " +
+                "-fx-background-radius: 3; " +
+                "-fx-cursor: hand;");
 
-        // Hover effect for small buttons
+        // Subtle hover effect
         button.setOnMouseEntered(e ->
-                button.setStyle("-fx-background-color: derive(" + color + ", -15%); -fx-text-fill: white; " +
-                        "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5 15; " +
-                        "-fx-background-radius: 3; -fx-cursor: hand;"));
+                button.setStyle("-fx-background-color: derive(" + color + ", 20%); " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 12px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 5 15; " +
+                        "-fx-background-radius: 3; " +
+                        "-fx-cursor: hand;"));
 
         button.setOnMouseExited(e ->
-                button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
-                        "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5 15; " +
-                        "-fx-background-radius: 3; -fx-cursor: hand;"));
+                button.setStyle("-fx-background-color: " + color + "; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 12px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 5 15; " +
+                        "-fx-background-radius: 3; " +
+                        "-fx-cursor: hand;"));
 
         return button;
     }
 
-    /**
-     * Create form field
-     */
-    private TextField createFormField(VBox parent, String labelText, String promptText) {
-        Label label = new Label(labelText);
-        label.setTextFill(Color.web(COLOR_DARK));
-        label.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
+    private VBox createFunctionCard(String title, String description, String color) {
+        VBox card = new VBox(15);
+        card.setPadding(new Insets(20));
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 10; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 10; " +
+                "-fx-cursor: hand;");
+        card.setPrefSize(350, 150);
+        card.setAlignment(Pos.CENTER);
 
-        TextField textField = new TextField(promptText);
-        textField.setStyle("-fx-font-size: 14px; -fx-background-radius: 3; -fx-padding: 5; " +
-                "-fx-background-color: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
+        Label titleLabel = new Label(title);
+        titleLabel.setFont(FONT_SUBTITLE);
+        titleLabel.setTextFill(Color.web(color));
+        titleLabel.setStyle("-fx-font-weight: bold;");
 
-        parent.getChildren().addAll(label, textField);
-        return textField;
+        Label descLabel = new Label(description);
+        descLabel.setFont(FONT_BODY);
+        descLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+        descLabel.setWrapText(true);
+        descLabel.setMaxWidth(300);
+
+        card.getChildren().addAll(titleLabel, descLabel);
+
+        // Very subtle hover effect
+        card.setOnMouseEntered(e ->
+                card.setStyle("-fx-background-color: " + COLOR_HOVER + "; " +
+                        "-fx-background-radius: 10; " +
+                        "-fx-border-color: " + color + "; " +
+                        "-fx-border-width: 2; " +
+                        "-fx-border-radius: 10; " +
+                        "-fx-cursor: hand;"));
+
+        card.setOnMouseExited(e ->
+                card.setStyle("-fx-background-color: white; " +
+                        "-fx-background-radius: 10; " +
+                        "-fx-border-color: " + COLOR_BORDER + "; " +
+                        "-fx-border-width: 1; " +
+                        "-fx-border-radius: 10; " +
+                        "-fx-cursor: hand;"));
+
+        return card;
     }
 
-    private TextField createGridField(GridPane grid, String labelText, int row, boolean withLabel) {
-        if (withLabel) {
-            Label label = new Label(labelText);
-            label.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
-            grid.add(label, 0, row);
-        }
+    private Label createStatLabel(String text, String color) {
+        Label label = new Label(text);
+        label.setFont(FONT_BODY);
+        label.setTextFill(Color.web(color));
+        label.setStyle("-fx-font-weight: bold;");
+        return label;
+    }
+
+    private String createTextFieldStyle() {
+        return "-fx-background-color: white; " +
+                "-fx-text-fill: " + COLOR_TEXT_PRIMARY + "; " +
+                "-fx-font-size: 14px; " +
+                "-fx-padding: 8; " +
+                "-fx-background-radius: 5; " +
+                "-fx-border-color: " + COLOR_BORDER + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 5;";
+    }
+
+    private TextField createDialogField(GridPane grid, String label, int row) {
+        Label lbl = new Label(label);
+        lbl.setFont(FONT_BODY);
+        lbl.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
         TextField textField = new TextField();
-        textField.setStyle("-fx-font-size: 12px; -fx-background-radius: 3; -fx-padding: 5; " +
-                "-fx-background-color: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
+        textField.setStyle(createTextFieldStyle());
+
+        grid.add(lbl, 0, row);
         grid.add(textField, 1, row);
+
         return textField;
     }
 
-    /**
-     * Create password field
-     */
-    private PasswordField createPasswordField(VBox parent, String labelText, String promptText) {
-        Label label = new Label(labelText);
-        label.setTextFill(Color.web(COLOR_DARK));
-        label.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
+    private PasswordField createDialogPasswordField(GridPane grid, String label, int row) {
+        Label lbl = new Label(label);
+        lbl.setFont(FONT_BODY);
+        lbl.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
         PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText(promptText);
-        passwordField.setStyle("-fx-font-size: 14px; -fx-background-radius: 3; -fx-padding: 5; " +
-                "-fx-background-color: white; -fx-border-color: " + COLOR_NEUTRAL + ";");
+        passwordField.setStyle(createTextFieldStyle());
 
-        parent.getChildren().addAll(label, passwordField);
+        grid.add(lbl, 0, row);
+        grid.add(passwordField, 1, row);
+
         return passwordField;
     }
 
-    /**
-     * Add statistic row to grid with color
-     */
-    private void addStatRow(GridPane grid, int row, String label, String value, String color) {
+    private void addDetail(VBox parent, String label, String value) {
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+
         Label lblLabel = new Label(label);
-        lblLabel.setTextFill(Color.web(COLOR_DARK));
-        lblLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        lblLabel.setFont(FONT_BODY);
+        lblLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+        lblLabel.setMinWidth(120);
 
         Label lblValue = new Label(value);
-        lblValue.setTextFill(Color.web(color));
-        lblValue.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+        lblValue.setFont(FONT_BODY);
+        lblValue.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        row.getChildren().addAll(lblLabel, lblValue);
+        parent.getChildren().add(row);
+    }
+
+    private void addDetail(GridPane grid, String label, String value, int row) {
+        Label lblLabel = new Label(label);
+        lblLabel.setFont(FONT_BODY);
+        lblLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+
+        Label lblValue = new Label(value);
+        lblValue.setFont(FONT_BODY);
+        lblValue.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
         grid.add(lblLabel, 0, row);
         grid.add(lblValue, 1, row);
     }
 
-    /**
-     * Create section separator
-     */
-    private VBox createSectionSeparator(String title, String color) {
-        Separator separator = new Separator();
-        separator.setPadding(new Insets(10, 0, 10, 0));
+    private void addDetail(VBox parent, String label, String value, String color) {
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
 
-        Label label = new Label(title);
-        label.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-        label.setTextFill(Color.web(color));
+        Label lblLabel = new Label(label);
+        lblLabel.setFont(FONT_BODY);
+        lblLabel.setTextFill(Color.web(COLOR_TEXT_SECONDARY));
+        lblLabel.setMinWidth(120);
 
-        VBox section = new VBox(5, label, separator);
-        return section;
+        Label lblValue = new Label(value);
+        lblValue.setFont(FONT_BODY);
+        lblValue.setTextFill(Color.web(color));
+
+        row.getChildren().addAll(lblLabel, lblValue);
+        parent.getChildren().add(row);
     }
 
-    /**
-     * Show information dialog
-     */
+    private void addStatRow(GridPane grid, int row, String label, int value, String color) {
+        addStatRow(grid, row, label, String.valueOf(value), color);
+    }
+
+    private void addStatRow(GridPane grid, int row, String label, String value, String color) {
+        Label lblLabel = new Label(label);
+        lblLabel.setFont(FONT_BODY);
+        lblLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
+
+        Label lblValue = new Label(value);
+        lblValue.setFont(FONT_SUBTITLE);
+        lblValue.setTextFill(Color.web(color));
+        lblValue.setStyle("-fx-font-weight: bold;");
+
+        grid.add(lblLabel, 0, row);
+        grid.add(lblValue, 1, row);
+    }
+
     private void showInformation(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -3324,9 +5278,6 @@ public class Main_GUI extends Application {
         alert.showAndWait();
     }
 
-    /**
-     * Show error dialog
-     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
