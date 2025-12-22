@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 public class ScreenManager {
     private Stage primaryStage;
-    private DataManager dataManager;
+    public DataManager dataManager;
 
     // Current user session
     private Object currentUser;
