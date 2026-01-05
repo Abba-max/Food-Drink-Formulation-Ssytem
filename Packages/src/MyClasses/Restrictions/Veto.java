@@ -20,4 +20,11 @@ public class Veto implements Serializable {
         this.initiator = initiator;
     }
 
+    public String getReason() {
+        return null;
+    }
+
+    public boolean isActive() {
+        return false;
+    }
 }

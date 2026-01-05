@@ -1,8 +1,8 @@
 package MyClasses;
 
 import MyClasses.Persons.ConsumerSpecificInfo;
-import java.io.Serializable;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
 

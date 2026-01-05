@@ -1,17 +1,21 @@
 package MyClasses.Persons;
 
+import MyClasses.Conditions.Conservecondition;
+import MyClasses.Conditions.Consumpcondition;
+import MyClasses.Conditions.Optcondition;
+import MyClasses.Conditions.Prepprotocol;
 import MyClasses.Consumables.Drink;
 import MyClasses.Consumables.Food;
 import MyClasses.Consumables.Item;
-import MyClasses.*;
-import MyClasses.Conditions.*;
+import MyClasses.Feedback;
+import MyClasses.Formulation;
 import MyClasses.Ingredients.Ingredient;
 import MyClasses.Ingredients.Quantity;
 import MyClasses.Keyboard.Keypad;
 import MyClasses.Keyboard.Screen;
 import MyClasses.Utilities.NotificationSystem;
-import java.io.Serializable;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
 /**
@@ -36,6 +40,7 @@ public class Author extends Person implements Formulation, Serializable {
 
     public Author(int authorID, String name, String address, String contact, String dob) {
         super();
+        this.setName(name);
         this.authorID = authorID;
         this.formulatedItems = new LinkedList<>();
     }

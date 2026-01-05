@@ -1,19 +1,20 @@
 package MyClasses.Consumables;
 
 
-import MyClasses.*;
 import MyClasses.Conditions.Conservecondition;
 import MyClasses.Conditions.Consumpcondition;
 import MyClasses.Conditions.Optcondition;
 import MyClasses.Conditions.Prepprotocol;
+import MyClasses.Feedback;
 import MyClasses.Ingredients.Ingredient;
 import MyClasses.Ingredients.Quantity;
 import MyClasses.Persons.Author;
 import MyClasses.Persons.ConsumerSpecificInfo;
 import MyClasses.Restrictions.Trademarkinfo;
 import MyClasses.Restrictions.Veto;
-import java.io.Serializable;
+import MyClasses.SideEffects;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
@@ -280,6 +281,7 @@ public class Food extends Item implements Serializable {
                 '}';
     }
 
-    public void setExpiryDate(String string) {
+    public void setExpiry_Date(String string) {
+
     }
 }

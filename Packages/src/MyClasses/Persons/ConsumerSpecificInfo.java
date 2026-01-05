@@ -1,7 +1,7 @@
 package MyClasses.Persons;
 
-import java.util.LinkedList;
 import java.io.Serializable;
+import java.util.LinkedList;
 
 /**
  * Consumer specific information including profile and allergies
