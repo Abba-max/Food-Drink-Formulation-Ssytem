@@ -1,7 +1,7 @@
 package MyClasses;
 
-import java.util.Date;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Feedback class for consumer comments on formulations
