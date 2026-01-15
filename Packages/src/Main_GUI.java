@@ -4668,10 +4668,15 @@ public class Main_GUI extends Application {
         searchLabel.setFont(FONT_SUBTITLE);
         searchLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
-        TextField txtSearch = new TextField();
-        txtSearch.setPromptText("Enter formulation name or keyword...");
-        txtSearch.setStyle(createTextFieldStyle());
-        txtSearch.setMaxWidth(400);
+    TextField txtSearch = new TextField();
+    txtSearch.setPromptText("Enter formulation name or keyword...");
+    txtSearch.setStyle(createTextFieldStyle());
+    txtSearch.setMaxWidth(400);
+
+    // Checkbox to choose ingredient matching mode (visible only for Ingredients filter)
+    CheckBox chkMatchAll = new CheckBox("Match all ingredients");
+    chkMatchAll.setSelected(true);
+    chkMatchAll.setVisible(false);
 
         HBox filterBox = new HBox(15);
         filterBox.setAlignment(Pos.CENTER);
@@ -4686,43 +4691,73 @@ public class Main_GUI extends Application {
         filterCombo.setStyle("-fx-background-color: white; " +
                 "-fx-border-color: " + COLOR_BORDER + ";");
 
-        Button btnSearch = createStandardButton("Search", COLOR_INFO);
+        // Show/hide ingredient checkbox based on selected filter
+        filterCombo.valueProperty().addListener((obs, oldV, newV) -> {
+            if ("Ingredients".equals(newV)) {
+                txtSearch.setPromptText("Ingredients (comma-separated)");
+                chkMatchAll.setVisible(true);
+            } else if ("Authors".equals(newV)) {
+                txtSearch.setPromptText("Author name or fragment...");
+                chkMatchAll.setVisible(false);
+            } else {
+                txtSearch.setPromptText("Enter formulation name or keyword...");
+                chkMatchAll.setVisible(false);
+            }
+        });
+
+    Button btnSearch = createStandardButton("Search", COLOR_INFO);
         Button btnBack = createStandardButton("Back to Dashboard", COLOR_TEXT_SECONDARY);
 
         btnSearch.setOnAction(e -> {
-            String searchTerm = txtSearch.getText().trim().toLowerCase();
+            String searchTerm = txtSearch.getText().trim();
             String filter = filterCombo.getValue();
 
             LinkedList<Item> searchResults = new LinkedList<>();
-            for (Item item : ((Customer)currentUser).getAvailableFormulations()) {
-                // Apply search filter
-                if (!searchTerm.isEmpty() && !item.getName().toLowerCase().contains(searchTerm)) {
-                    continue;
-                }
 
-                // Apply type filter
-                if (filter.equals("Food Only") && !(item instanceof Food)) {
-                    continue;
+            // If filter is Authors -> perform DB search by author name
+            if ("Authors".equals(filter)) {
+                if (!searchTerm.isEmpty()) {
+                    try {
+                        searchResults = databaseManager.findFormulationsByAuthorName(searchTerm);
+                    } catch (Exception ex) {
+                        System.err.println("Error searching by author in UI: " + ex.getMessage());
+                    }
+                } else {
+                    // empty -> show all available (non-vetoed)
+                    searchResults = getNonVetoedFormulations();
                 }
-                if (filter.equals("Drink Only") && !(item instanceof Drink)) {
-                    continue;
-                }
-                if (filter.equals("Authors") && !item.getAuthor().getName().toLowerCase().contains(searchTerm)) {
-                    continue;
-                }
+            }
 
-                // Apply price filter
-//                if (filter.equals("Under $10") && item.getPrice() >= 10) {
-//                    continue;
-//                }
-//                if (filter.equals("$10-$20") && (item.getPrice() < 10 || item.getPrice() > 20)) {
-//                    continue;
-//                }
-//                if (filter.equals("Over $20") && item.getPrice() <= 20) {
-//                    continue;
-//                }
+            // If filter is Ingredients -> parse comma-separated and call DB
+            else if ("Ingredients".equals(filter)) {
+                if (!searchTerm.isEmpty()) {
+                    java.util.List<String> ingList = new java.util.ArrayList<>();
+                    for (String part : searchTerm.split(",")) {
+                        String p = part.trim();
+                        if (!p.isEmpty()) ingList.add(p);
+                    }
+                    try {
+                        searchResults = databaseManager.findFormulationsByIngredientNames(ingList, chkMatchAll.isSelected());
+                    } catch (Exception ex) {
+                        System.err.println("Error searching by ingredients in UI: " + ex.getMessage());
+                    }
+                } else {
+                    searchResults = getNonVetoedFormulations();
+                }
+            }
 
-                searchResults.add(item);
+            // Otherwise, keep previous local filtering behavior (by name/type)
+            else {
+                String lowerTerm = searchTerm.toLowerCase();
+                for (Item item : ((Customer) currentUser).getAvailableFormulations()) {
+                    if (!lowerTerm.isEmpty() && !item.getName().toLowerCase().contains(lowerTerm)) {
+                        continue;
+                    }
+                    if (filter.equals("Food Only") && !(item instanceof Food)) continue;
+                    if (filter.equals("Drink Only") && !(item instanceof Drink)) continue;
+                    // default 'All' or other filters
+                    searchResults.add(item);
+                }
             }
 
             showSearchResults(searchResults, searchTerm, filter);
