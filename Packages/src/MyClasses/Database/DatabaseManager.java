@@ -514,7 +514,20 @@ public class DatabaseManager {
             pstmt.setDouble(4, item.getPrice());
             pstmt.setDate(5, item.getEntry_date() != null ? new java.sql.Date(item.getEntry_date().getTime()) : null);
             pstmt.setString(6, item.getExpiry_date());
-
+            String expiryDate = item.getExpiry_date();
+            if (expiryDate != null && !expiryDate.isEmpty()) {
+                // Check format and convert if needed
+                if (expiryDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
+                    // Convert DD-MM-YYYY to YYYY-MM-DD
+                    String[] parts = expiryDate.split("-");
+                    if (parts.length == 3) {
+                        expiryDate = parts[2] + "-" + parts[1] + "-" + parts[0];
+                    }
+                }
+                pstmt.setString(6, expiryDate);
+            } else {
+                pstmt.setNull(6, java.sql.Types.VARCHAR);
+            }
             double avgPrice = 0;
             if (item instanceof Food) {
                 avgPrice = ((Food) item).getAveragePricePerKg();
@@ -523,11 +536,18 @@ public class DatabaseManager {
             }
             pstmt.setDouble(7, avgPrice);
 
-            int authorId = 0;
-            if (item.getAuthor() != null) {
-                authorId = ((Author) item.getAuthor()).getAuthorID();
+            // FIX: Handle author_id properly
+            if (item.getAuthor() != null && item.getAuthor() instanceof Author) {
+                Author author = (Author) item.getAuthor();
+                // Verify author exists in database
+                if (authorExistsInDatabase(author.getAuthorID())) {
+                    pstmt.setInt(8, author.getAuthorID());
+                } else {
+                    pstmt.setNull(8, java.sql.Types.INTEGER);
+                }
+            } else {
+                pstmt.setNull(8, java.sql.Types.INTEGER);
             }
-            pstmt.setInt(8, authorId);
 
             // For UPDATE
             pstmt.setString(9, item.getName());
@@ -537,6 +557,23 @@ public class DatabaseManager {
 
             pstmt.executeUpdate();
         }
+    }
+
+    /**
+     * Check if author exists in database
+     */
+    private boolean authorExistsInDatabase(int authorId) {
+        String sql = "SELECT COUNT(*) FROM authors WHERE author_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, authorId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**

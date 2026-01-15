@@ -126,6 +126,9 @@ public class Main_GUI extends Application {
                 System.out.println("Database connection successful");
                 databaseManager = new DatabaseManager();
 
+//                createSampleData();
+//                saveDataToDatabase();
+
                 // Load all data
                 loadDataFromDatabase();
 
@@ -168,16 +171,16 @@ public class Main_GUI extends Application {
      */
     private void createSampleData() {
         // Create default admin
-        Admin defaultAdmin = new Admin(1, "System Admin", "HQ", "+1-000-0000", "1980-01-01", "admin123");
+        Admin defaultAdmin = new Admin(2, "System Admin", "HQ", "+1-000-0000", "1980-01-01", "admin123");
         admins.add(defaultAdmin);
 
         // Create sample author
-        Author sampleAuthor = new Author(1, "John Chef", "Kitchen St.", "chef@email.com", "1975-05-15");
+        Author sampleAuthor = new Author(2, "John Chef", "Kitchen St.", "chef@email.com", "1975-05-15");
         sampleAuthor.setPassword("author123");
         authors.add(sampleAuthor);
 
         // Create sample customer
-        Customer sampleCustomer = new Customer(1, 30);
+        Customer sampleCustomer = new Customer(2, 30);
         sampleCustomer.setName("Jane Customer");
         sampleCustomer.setAddress("123 Main St");
         sampleCustomer.setContact("customer@email.com");
@@ -4678,7 +4681,7 @@ public class Main_GUI extends Application {
         filterLabel.setTextFill(Color.web(COLOR_TEXT_PRIMARY));
 
         ComboBox<String> filterCombo = new ComboBox<>();
-        filterCombo.getItems().addAll("All", "Food Only", "Drink Only", "Under $10", "$10-$20", "Over $20");
+        filterCombo.getItems().addAll("All", "Food Only", "Drink Only", "Authors", "Ingredients");
         filterCombo.setValue("All");
         filterCombo.setStyle("-fx-background-color: white; " +
                 "-fx-border-color: " + COLOR_BORDER + ";");
@@ -4704,17 +4707,20 @@ public class Main_GUI extends Application {
                 if (filter.equals("Drink Only") && !(item instanceof Drink)) {
                     continue;
                 }
+                if (filter.equals("Authors") && !item.getAuthor().getName().toLowerCase().contains(searchTerm)) {
+                    continue;
+                }
 
                 // Apply price filter
-                if (filter.equals("Under $10") && item.getPrice() >= 10) {
-                    continue;
-                }
-                if (filter.equals("$10-$20") && (item.getPrice() < 10 || item.getPrice() > 20)) {
-                    continue;
-                }
-                if (filter.equals("Over $20") && item.getPrice() <= 20) {
-                    continue;
-                }
+//                if (filter.equals("Under $10") && item.getPrice() >= 10) {
+//                    continue;
+//                }
+//                if (filter.equals("$10-$20") && (item.getPrice() < 10 || item.getPrice() > 20)) {
+//                    continue;
+//                }
+//                if (filter.equals("Over $20") && item.getPrice() <= 20) {
+//                    continue;
+//                }
 
                 searchResults.add(item);
             }

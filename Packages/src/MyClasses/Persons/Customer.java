@@ -348,6 +348,7 @@ public class Customer extends Person implements Formulation,Serializable {
 
         screen.display("\n=== SEARCH RESULTS ===");
         boolean found = false;
+        boolean found1 = false;
 
         for (Item item : availableFormulations) {
             if (item.getName() != null &&
