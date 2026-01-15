@@ -937,13 +937,15 @@ public class DatabaseManager {
             veto = ((Drink) item).getVeto();
         }
 
-        if (veto != null) {
-            String deleteSql = "DELETE FROM vetos WHERE item_id = ?";
-            try (PreparedStatement pstmt = connection.prepareStatement(deleteSql)) {
-                pstmt.setInt(1, item.getItemID());
-                pstmt.executeUpdate();
-            }
+        // Always remove existing veto rows for this item first
+        String deleteSql = "DELETE FROM vetos WHERE item_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(deleteSql)) {
+            pstmt.setInt(1, item.getItemID());
+            pstmt.executeUpdate();
+        }
 
+        // If there's a veto object, insert it; otherwise we've effectively removed veto
+        if (veto != null) {
             String sql = "INSERT INTO vetos (item_id, is_vetoed, reason, veto_date, initiator_type) " +
                     "VALUES (?, ?, ?, ?, ?)";
 

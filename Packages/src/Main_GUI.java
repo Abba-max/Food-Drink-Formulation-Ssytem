@@ -1726,6 +1726,22 @@ public class Main_GUI extends Application {
             auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
                     "Set veto on formulation: " + item.getName() + " (Reason: " + reason + ")");
             showInformation("Success", "Veto set successfully on " + item.getName());
+            // Update customers' available lists so vetoed item is no longer visible to customers
+            try {
+                for (Customer c : customers) {
+                    if (c.getAvailableFormulations() != null) {
+                        c.getAvailableFormulations().removeIf(i -> i.getItemID() == item.getItemID());
+                    }
+                }
+            } catch (Exception ex) {
+                // non-fatal
+                System.err.println("Failed to update customers after veto: " + ex.getMessage());
+            }
+
+            // If a customer is currently logged in, refresh their catalog view to reflect the change
+            if ("CUSTOMER".equals(currentUserType)) {
+                showCustomerCatalogScreen();
+            }
         } catch (Exception e) {
             showError("Error", "Failed to set veto: " + e.getMessage());
         }
@@ -1746,6 +1762,25 @@ public class Main_GUI extends Application {
             auditTrail.logAction("ADMIN:" + ((Admin)currentUser).getName(),
                     "Removed veto from formulation: " + item.getName());
             showInformation("Success", "Veto removed successfully from " + item.getName());
+            // Update customers' available lists: add back the item for customers if appropriate
+            try {
+                for (Customer c : customers) {
+                    if (c.getAvailableFormulations() == null) continue;
+                    boolean present = false;
+                    for (Item i : c.getAvailableFormulations()) {
+                        if (i.getItemID() == item.getItemID()) { present = true; break; }
+                    }
+                    if (!present && !isItemVetoed(item)) {
+                        c.getAvailableFormulations().add(item);
+                    }
+                }
+            } catch (Exception ex) {
+                System.err.println("Failed to update customers after removing veto: " + ex.getMessage());
+            }
+
+            if ("CUSTOMER".equals(currentUserType)) {
+                showCustomerCatalogScreen();
+            }
         } catch (Exception e) {
             showError("Error", "Failed to remove veto: " + e.getMessage());
         }

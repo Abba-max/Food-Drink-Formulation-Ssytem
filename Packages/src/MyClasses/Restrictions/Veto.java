@@ -21,10 +21,10 @@ public class Veto implements Serializable {
     }
 
     public String getReason() {
-        return null;
+        return this.reason;
     }
 
     public boolean isActive() {
-        return false;
+        return this.isVetoed;
     }
 }
