@@ -141,6 +141,22 @@ public class DataManager {
         return authorFormulations;
     }
 
+    // ============ SEARCH HELPERS ============
+
+    /**
+     * Find formulations by author name (delegates to DatabaseManager)
+     */
+    public LinkedList<Item> findFormulationsByAuthorName(String authorNamePattern) {
+        return databaseManager.findFormulationsByAuthorName(authorNamePattern);
+    }
+
+    /**
+     * Find formulations by ingredient names. If matchAll is true, item must contain all ingredients.
+     */
+    public LinkedList<Item> findFormulationsByIngredientNames(java.util.List<String> ingredientNames, boolean matchAll) {
+        return databaseManager.findFormulationsByIngredientNames(ingredientNames, matchAll);
+    }
+
     private boolean isItemVetoed(Item item) {
         if (item instanceof Food) {
             return ((Food) item).isVetoed();

@@ -239,6 +239,101 @@ public class DatabaseManager {
         return formulations;
     }
 
+    /**
+     * Search formulations by author name (partial, case-insensitive)
+     */
+    public LinkedList<Item> findFormulationsByAuthorName(String authorNamePattern) {
+        LinkedList<Item> results = new LinkedList<>();
+        if (authorNamePattern == null || authorNamePattern.trim().isEmpty()) {
+            return loadFormulations();
+        }
+
+        String sql = "SELECT i.* FROM items i " +
+                "JOIN item_authors ia ON i.item_id = ia.item_id " +
+                "JOIN authors a ON ia.author_id = a.author_id " +
+                "WHERE LOWER(a.name) LIKE LOWER(?)";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, "%" + authorNamePattern.trim() + "%");
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Item item = loadItemFromResultSet(rs);
+                if (item != null) results.add(item);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching by author: " + e.getMessage());
+        }
+
+        return results;
+    }
+
+    /**
+     * Search formulations by ingredient names.
+     * If matchAll is true, returns items that contain ALL ingredient names (exact lowercased match);
+     * otherwise returns items that contain AT LEAST ONE of the ingredient name patterns.
+     */
+    public LinkedList<Item> findFormulationsByIngredientNames(java.util.List<String> ingredientNames, boolean matchAll) {
+        LinkedList<Item> results = new LinkedList<>();
+        if (ingredientNames == null || ingredientNames.isEmpty()) {
+            return loadFormulations();
+        }
+
+        // normalize
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (String n : ingredientNames) {
+            if (n != null && !n.trim().isEmpty()) names.add(n.trim().toLowerCase());
+        }
+        if (names.isEmpty()) return loadFormulations();
+
+        try {
+            if (!matchAll) {
+                // any match: use LIKE for each provided name and collect distinct items
+                String sql = "SELECT DISTINCT i.* FROM items i JOIN ingredients ing ON i.item_id = ing.item_id " +
+                        "WHERE LOWER(ing.name) LIKE LOWER(?)";
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    for (String name : names) {
+                        pstmt.setString(1, "%" + name + "%");
+                        ResultSet rs = pstmt.executeQuery();
+                        while (rs.next()) {
+                            Item item = loadItemFromResultSet(rs);
+                            if (item != null && !results.contains(item)) results.add(item);
+                        }
+                    }
+                }
+            } else {
+                // must contain all searched ingredient names (exact lowercased comparison)
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < names.size(); i++) {
+                    if (i > 0) placeholders.append(", ");
+                    placeholders.append("?");
+                }
+
+                String sql = "SELECT i.* FROM items i " +
+                        "JOIN ingredients ing ON i.item_id = ing.item_id " +
+                        "WHERE LOWER(ing.name) IN (" + placeholders.toString() + ") " +
+                        "GROUP BY i.item_id " +
+                        "HAVING COUNT(DISTINCT LOWER(ing.name)) = ?";
+
+                try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                    int idx = 1;
+                    for (String name : names) {
+                        pstmt.setString(idx++, name);
+                    }
+                    pstmt.setInt(idx, names.size());
+                    ResultSet rs = pstmt.executeQuery();
+                    while (rs.next()) {
+                        Item item = loadItemFromResultSet(rs);
+                        if (item != null) results.add(item);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching by ingredients: " + e.getMessage());
+        }
+
+        return results;
+    }
+
     // =====================================================
     // CUSTOMER OPERATIONS
     // =====================================================
